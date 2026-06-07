@@ -231,7 +231,7 @@ export default function App() {
     } else if (currentView === "landing") {
       if (path !== "/") window.history.pushState(null, "", "/");
     } else if (currentView === "auth") {
-      if (path !== "/auth") window.history.pushState(null, "", "/auth");
+      if (path !== "/auth" && path !== "/admin") window.history.pushState(null, "", "/auth");
     } else {
       if (path !== `/${currentView}`) window.history.pushState(null, "", `/${currentView}`);
     }

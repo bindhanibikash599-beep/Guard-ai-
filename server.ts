@@ -12,7 +12,7 @@ import { createServer as createViteServer } from "vite";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
 app.use(express.json());
 
@@ -241,10 +241,10 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
 // Configure Vite middleware or serve static static build
 async function setupVite() {
   const distPath = path.join(process.cwd(), "dist");
-  // Check if we are running in production mode, if dist/index.html exists, or if compiled code is running inside /dist
+  // Check if we are running in production mode (production env or running compiled server inside dist)
   const isProductionMode = 
     process.env.NODE_ENV === "production" || 
-    fs.existsSync(path.join(distPath, "index.html")) || 
+    __dirname.endsWith("dist") || 
     __dirname.includes("dist");
 
   if (!isProductionMode) {
