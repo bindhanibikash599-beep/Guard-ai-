@@ -43,6 +43,8 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
   const [instagramId, setInstagramId] = useState("_noirvex1");
   const [telegramGroupLink, setTelegramGroupLink] = useState("https://t.me/+fPPluun0pE9lZjY1");
   const [announcement, setAnnouncement] = useState("");
+  const [freeDailyLimit, setFreeDailyLimit] = useState(5);
+  const [premiumDailyLimit, setPremiumDailyLimit] = useState(100);
 
   // Server stats state
   const [serverStats, setServerStats] = useState({
@@ -55,7 +57,6 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
 
   // Admin Model overrides
   const [customModel, setCustomModel] = useState("z-ai/glm-4.5-air:free");
-  const [customApiKey, setCustomApiKey] = useState("");
   const [tabIndex, setTabIndex] = useState<"control" | "deploy" | "stats">("control");
 
   // Retrieve users, reports, and system settings from RTDB
@@ -96,6 +97,8 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
         if (data.telegramGroupLink !== undefined) setTelegramGroupLink(data.telegramGroupLink);
         if (data.announcement !== undefined) setAnnouncement(data.announcement);
         if (data.modelId !== undefined) setCustomModel(data.modelId);
+        if (data.freeDailyLimit !== undefined) setFreeDailyLimit(Number(data.freeDailyLimit));
+        if (data.premiumDailyLimit !== undefined) setPremiumDailyLimit(Number(data.premiumDailyLimit));
       }
     });
 
@@ -129,10 +132,11 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
       // 1. Save settings persistently to Firebase RTDB for user app view
       await set(ref(rtdb, "system/settings"), {
         modelId: customModel,
-        openRouterApiKey: customApiKey,
         instagramId,
         telegramGroupLink,
         announcement,
+        freeDailyLimit: Number(freeDailyLimit),
+        premiumDailyLimit: Number(premiumDailyLimit),
         updatedAt: Date.now()
       });
 
@@ -142,16 +146,16 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: customModel,
-          apiKey: customApiKey,
           instagramId,
           telegramGroupLink,
-          announcement
+          announcement,
+          freeDailyLimit: Number(freeDailyLimit),
+          premiumDailyLimit: Number(premiumDailyLimit)
         }),
       });
       const data = await res.json();
       if (data.success) {
-        alert("Success! System configuration, model parameters, broadcast announcement & developer support handles have been saved globally!");
-        setCustomApiKey("");
+        alert("Success! System configuration, model parameters, free/premium credits & developer updates saved globally!");
         fetchStats();
       }
     } catch (e) {
@@ -167,6 +171,17 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
     } catch (err) {
       console.error(err);
       alert("Failed updating user block attribute.");
+    }
+  };
+
+  // Toggle user premium plan directly
+  const handleTogglePremium = async (uid: string, currentPlan: string) => {
+    try {
+      const nextPlan = currentPlan === "premium" ? "free" : "premium";
+      await set(ref(rtdb, `users/${uid}/plan`), nextPlan);
+    } catch (err) {
+      console.error(err);
+      alert("Failed updating user plan attribute.");
     }
   };
 
@@ -416,14 +431,13 @@ gcloud run deploy guard-english-ai \\
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 font-mono">OpenRouter Key Overwrite (Saved Privately)</label>
-                <input
-                  type="password"
-                  value={customApiKey}
-                  onChange={(e) => setCustomApiKey(e.target.value)}
-                  placeholder={serverStats.hasOpenRouterKey ? "••••••••••••••••" : "Leave blank to use default .env keys"}
-                  className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
-                />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Server Setup Mode</label>
+                <div className={`p-2.5 rounded-lg border flex flex-col text-xs justify-center ${darkMode ? "bg-slate-950 border-slate-800 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-705"}`}>
+                  <span className="font-semibold text-slate-405 dark:text-slate-450">API Key Source:</span>
+                  <span className="font-mono text-emerald-500 font-bold text-[11px] truncate flex items-center gap-1">
+                    🟢 AI Studio Environment Secret
+                  </span>
+                </div>
               </div>
 
               <div>
@@ -470,6 +484,35 @@ gcloud run deploy guard-english-ai \\
                   placeholder="Display informational updates to all users..."
                   className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
                 />
+              </div>
+            </div>
+
+            <div className="border-t dark:border-slate-800 my-4"></div>
+
+            {/* Dynamic Credits Limits Management */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">🛡️ Daily Free Account Credit Limit (Generations)</label>
+                <input 
+                  type="number"
+                  value={freeDailyLimit}
+                  onChange={(e) => setFreeDailyLimit(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  placeholder="e.g. 5"
+                  className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
+                />
+                <span className="text-[9px] text-slate-400 block mt-1">Default allowance given daily to standard free security accounts.</span>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">💎 Daily Premium Account Credit Limit (Generations)</label>
+                <input 
+                  type="number"
+                  value={premiumDailyLimit}
+                  onChange={(e) => setPremiumDailyLimit(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  placeholder="e.g. 100"
+                  className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
+                />
+                <span className="text-[9px] text-slate-400 block mt-1">Default allowance given daily to upgraded/Premium officers.</span>
               </div>
             </div>
 
@@ -522,18 +565,44 @@ gcloud run deploy guard-english-ai \\
               filteredUsers.map((u) => (
                 <div 
                   key={u.uid}
-                  className={`p-3 rounded-lg border flex items-center justify-between gap-3 text-xs ${darkMode ? "bg-slate-950/40 border-slate-900" : "bg-slate-50 border-slate-200"}`}
+                  className={`p-3 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${darkMode ? "bg-slate-950/40 border-slate-900" : "bg-slate-50 border-slate-200"}`}
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <p className="font-bold text-slate-900 dark:text-slate-100">{u.displayName}</p>
                     <p className="text-[10px] text-slate-400 font-mono">{u.email}</p>
-                    <div className="flex flex-wrap gap-1 items-center">
+                    <div className="flex flex-wrap gap-1.5 items-center mt-1">
                       <span className="px-1.5 py-0.5 rounded text-[9px] bg-slate-200 dark:bg-slate-800 text-slate-650 dark:text-slate-400">{u.designation || "Officer"}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${u.plan === "premium" ? "bg-blue-500/10 text-blue-500" : "bg-slate-600/10 text-slate-400"}`}>{u.plan || "free"}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${u.plan === "premium" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-slate-600/10 text-slate-400"}`}>{u.plan || "free"}</span>
+                    </div>
+
+                    {/* Per-user custom daily credit limit override input */}
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="text-[9px] text-slate-400 font-mono">Custom Daily Limit:</span>
+                      <input 
+                        type="number"
+                        value={u.chatLimit !== undefined && u.chatLimit !== null ? u.chatLimit : ""}
+                        onChange={async (e) => {
+                          const val = e.target.value === "" ? null : Math.max(1, parseInt(e.target.value, 10));
+                          await set(ref(rtdb, `users/${u.uid}/chatLimit`), val);
+                        }}
+                        placeholder="Default"
+                        className={`w-16 px-1.5 py-0.5 rounded text-[10px] text-center border focus:outline-none font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-800"}`}
+                      />
+                      <span className="text-[9px] text-slate-500">(Overrides default)</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Grant / Revoke Premium Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePremium(u.uid, u.plan || "free")}
+                      className={`p-2 rounded-lg transition ${u.plan === "premium" ? "text-rose-500 bg-rose-500/10 hover:bg-rose-500/20" : "text-slate-400 hover:text-rose-500"}`}
+                      title={u.plan === "premium" ? "Downgrade to Free Tier" : "Upgrade to Premium Tier"}
+                    >
+                      <Heart className={`w-4 h-4 ${u.plan === "premium" ? "fill-current" : ""}`} />
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleToggleBlock(u.uid, !!u.blocked)}

@@ -8,7 +8,6 @@ import {
   Shield, 
   ArrowRight, 
   Sparkles, 
-  Mic, 
   Copy, 
   FileCheck, 
   HelpCircle, 
@@ -26,10 +25,23 @@ interface LandingPageProps {
   lang: "en" | "hi" | "or";
   setLang: (lang: "en" | "hi" | "or") => void;
   darkMode: boolean;
+  adminEmail?: string;
+  freeDailyLimit?: number;
 }
 
-export default function LandingPage({ onStartFree, lang, setLang, darkMode }: LandingPageProps) {
+export default function LandingPage({ 
+  onStartFree, 
+  lang, 
+  setLang, 
+  darkMode, 
+  adminEmail = "bindhanibikash71@gmail.com",
+  freeDailyLimit = 5 
+}: LandingPageProps) {
   const t = locales[lang];
+
+  const handleGoPremiumClick = () => {
+    alert(`Premium features actuate instantly. To upgrade, please contact our Administrator on Email: ${adminEmail} to activate your unlimited corporate account!`);
+  };
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
@@ -37,9 +49,12 @@ export default function LandingPage({ onStartFree, lang, setLang, darkMode }: La
       <nav className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${darkMode ? "bg-slate-950/80 border-slate-900" : "bg-white/80 border-slate-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 text-white p-2 rounded-xl shadow-lg">
-              <Shield className="w-6 h-6" />
-            </div>
+            <img
+              src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+              alt="Guard AI Logo"
+              className="w-10 h-10 object-contain rounded-xl"
+              referrerPolicy="no-referrer"
+            />
             <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-indigo-500 to-sky-400 bg-clip-text text-transparent">
               GUARD ENGLISH AI
             </span>
@@ -226,11 +241,11 @@ Security Team`}
           {/* Feature 3 */}
           <div className={`p-6 rounded-2xl border transition hover:shadow-lg ${darkMode ? "bg-slate-900/30 border-slate-900 hover:bg-slate-900/50" : "bg-white border-slate-100 hover:bg-slate-100/40"}`}>
             <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950 flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4">
-              <Mic className="w-5 h-5" />
+              <Sparkles className="w-5 h-5" />
             </div>
-            <h4 className="font-bold text-lg mb-2">Voice Recognition (Speech to Text)</h4>
+            <h4 className="font-bold text-lg mb-2">AI Tone Refinement</h4>
             <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
-              Simply tap and dictate in Hindi, Odia, or broken English. The app captures voice inputs and directly sends them to our AI translator.
+              Polish your descriptions. Our AI fixes grammar mistakes, improves writing structure, and upgrades casual remarks to corporate standards instantly.
             </p>
           </div>
 
@@ -285,13 +300,13 @@ Security Team`}
               <div>
                 <h4 className="text-xl font-bold text-slate-500">Free Tier</h4>
                 <div className="text-4xl font-extrabold mt-4">
-                  $0 <span className="text-sm font-normal text-slate-400">/ forever</span>
+                  ₹0 <span className="text-sm font-normal text-slate-400 font-sans">/ forever</span>
                 </div>
                 <p className="text-sm mt-2 text-slate-400">Perfect for getting started and occasional message checks.</p>
                 <div className="border-t dark:border-slate-800 my-6"></div>
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-center gap-2">
-                    <span className="text-indigo-600 font-bold">✓</span> 5 generations per day
+                    <span className="text-indigo-600 font-bold">✓</span> {freeDailyLimit} generations per day
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-indigo-600 font-bold">✓</span> English translation
@@ -317,7 +332,7 @@ Security Team`}
               <div>
                 <h4 className="text-xl font-bold text-indigo-600">Enterprise Standard (Premium)</h4>
                 <div className="text-4xl font-extrabold mt-4">
-                  $4.99 <span className="text-sm font-normal text-slate-400">/ month</span>
+                  ₹299 <span className="text-sm font-normal text-slate-400 font-sans">/ month</span>
                 </div>
                 <p className="text-sm mt-2 text-slate-400">Special rate crafted to support our hard-working officers.</p>
                 <div className="border-t dark:border-slate-800 my-6"></div>
@@ -339,7 +354,7 @@ Security Team`}
                   </li>
                 </ul>
               </div>
-              <button onClick={onStartFree} className="w-full mt-6 py-3 px-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/35">
+              <button onClick={handleGoPremiumClick} className="w-full mt-6 py-3 px-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/35">
                 Go Premium
               </button>
             </div>

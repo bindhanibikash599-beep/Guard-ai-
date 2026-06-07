@@ -11,8 +11,6 @@ import {
   ShieldAlert, 
   UserPlus, 
   RefreshCcw, 
-  Mic, 
-  MicOff, 
   Sparkles, 
   Copy, 
   Check, 
@@ -32,18 +30,29 @@ interface FormsViewProps {
   onSaveReport: (report: { title: string; type: string; originalInput: string; formattedOutput: string }) => Promise<void>;
   activeTab: string; // "attendance" | "incident" | "leave" | "late" | "visitor" | "handover" | "dailylog"
   setActiveTab: (tab: string) => void;
+  isLimitExceeded?: boolean;
+  dailyLimit?: number;
+  remainingCredits?: number;
+  adminEmail?: string;
 }
 
-export default function FormsView({ lang, darkMode, onSaveReport, activeTab, setActiveTab }: FormsViewProps) {
+export default function FormsView({ 
+  lang, 
+  darkMode, 
+  onSaveReport, 
+  activeTab, 
+  setActiveTab,
+  isLimitExceeded = false,
+  dailyLimit = 5,
+  remainingCredits = 5,
+  adminEmail = "bindhanibikash71@gmail.com"
+}: FormsViewProps) {
   const t = locales[lang];
 
   // Common Form Loading indicator
   const [loading, setLoading] = useState(false);
   const [outputText, setOutputText] = useState("");
   const [copied, setCopied] = useState(false);
-  const [activeVoiceField, setActiveVoiceField] = useState<string | null>(null);
-  const [listening, setListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
 
   // States for all 7 reports
   // 1. Attendance Report
@@ -112,92 +121,12 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
     logDetails: "08:00 - Took over shift and patrolled compound\n12:00 - Lunch hour patrol, perimeter doors secured\n16:00 - Registered 4 visitor delivery trucks\n20:00 - Gate locks checked, handover completed."
   });
 
-  // Global voice recognition callback
-  const startSpeechRecognitionForField = (fieldName: string, currentVal: any, setValFn: any) => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice speech recognition is not supported in your browser.");
-      return;
-    }
-
-    if (listening && activeVoiceField === fieldName) {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (err) {
-          console.error("Failed to abort speech recognition:", err);
-        }
-      }
-      setListening(false);
-      setActiveVoiceField(null);
-      return;
-    }
-
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (err) {
-        console.error("Failed to abort speech recognition:", err);
-      }
-    }
-
-    const startRecording = () => {
-      const rec = new SpeechRecognition();
-      rec.continuous = false;
-      rec.interimResults = false;
-      rec.lang = lang === "hi" ? "hi-IN" : lang === "or" ? "or-IN" : "en-IN";
-
-      rec.onstart = () => {
-        setListening(true);
-        setActiveVoiceField(fieldName);
-      };
-
-      rec.onresult = (evt: any) => {
-        const transcript = evt.results[0][0].transcript;
-        if (transcript) {
-          setValFn((prev: any) => ({
-            ...prev,
-            [fieldName]: (prev[fieldName] ? prev[fieldName] + " " : "") + transcript
-          }));
-        }
-      };
-
-      rec.onerror = (e: any) => {
-        console.error("Speech recognition error:", e);
-        setListening(false);
-        setActiveVoiceField(null);
-      };
-
-      rec.onend = () => {
-        setListening(false);
-        setActiveVoiceField(null);
-      };
-
-      recognitionRef.current = rec;
-      try {
-        rec.start();
-      } catch (err: any) {
-        console.error("Speech recognition start method failed:", err);
-        if (err.name === "InvalidStateError" || (err.message && err.message.includes("already started"))) {
-          setListening(true);
-          setActiveVoiceField(fieldName);
-        } else {
-          setListening(false);
-          setActiveVoiceField(null);
-        }
-      }
-    };
-
-    if (listening) {
-      setTimeout(() => {
-        startRecording();
-      }, 150);
-    } else {
-      startRecording();
-    }
-  };
-
   const handleGenerateReport = async (type: string, payload: any) => {
+    if (isLimitExceeded) {
+      alert(`Daily request limit reached! Your daily limit is ${dailyLimit} conversions. To secure more request allowance or upgrade to UNLIMITED corporate tier, please contact our administrator directly on Email:\n\n👉  ${adminEmail}  👈`);
+      return;
+    }
+
     setLoading(true);
     setOutputText("");
 
@@ -213,7 +142,7 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
         body: JSON.stringify({
           text: `Form inputs received:\n${inputSummary}`,
           type: `Official Report Form - ${type.toUpperCase()}`,
-          format: "corporate",
+          format: "corporate"
         }),
       });
 
@@ -262,35 +191,34 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
 
   return (
     <div className="space-y-6">
-      {/* Simple Bilingual Helper Guide */}
+      {/* Simple Helper Guide */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
         <h3 className="font-bold text-sm text-amber-900 flex items-center gap-1.5">
-          📋 सरकारी एवं कंपनी रिपोर्ट फॉर्म (Select & Fill Form)
+          📋 Official Report Forms
         </h3>
         <p className="text-xs text-amber-800 leading-relaxed">
-          नीचे दिए गए बटनों में से जो भी रिपोर्ट बनानी है उसे चुनें, खाली जगह भरें और सबसे नीचे <strong>"रिपोर्ट तैयार करें"</strong> दबाएं.
-          (Choose any report below, fill fields, and press "Generate Report" at the bottom.)
+          Select any report button below, fill out the form fields, and click "Generate Report" at the bottom.
         </p>
       </div>
 
       {/* Horizontal Sub Header */}
       <div className="border-b pb-4 dark:border-slate-800">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">✍️ Structured Operations Forms (रिपोर्ट फॉर्म)</h2>
+        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">✍️ Structured Operations Forms</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          गार्ड रिपोर्ट, हाजिरी रिपोर्ट और शिफ्ट हैंडओवर जैसी जरूरी रिपोर्ट्स यहाँ आसानी से बनायें.
+          Easily draft guards logs, shift handovers, visitor logs, and daily attendance records.
         </p>
       </div>
 
       {/* Generator Tab buttons */}
       <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
         {[
-          { key: "attendance", label: `${t.attendance} (हाजिरी)`, icon: UserCheck },
-          { key: "incident", label: `${t.incident} (घटना)`, icon: ShieldAlert },
-          { key: "leave", label: `${t.leave} (छुट्टी)`, icon: Calendar },
-          { key: "late", label: `${t.lateReport} (लेट)`, icon: Clock },
-          { key: "visitor", label: `${t.visitor} (विजिटर)`, icon: UserPlus },
-          { key: "handover", label: `${t.handover} (हैंडओवर)`, icon: RefreshCcw },
-          { key: "dailylog", label: `${t.dailyLog} (डेली लॉग)`, icon: ClipboardList }
+          { key: "attendance", label: `${t.attendance}`, icon: UserCheck },
+          { key: "incident", label: `${t.incident}`, icon: ShieldAlert },
+          { key: "leave", label: `${t.leave}`, icon: Calendar },
+          { key: "late", label: `${t.lateReport}`, icon: Clock },
+          { key: "visitor", label: `${t.visitor}`, icon: UserPlus },
+          { key: "handover", label: `${t.handover}`, icon: RefreshCcw },
+          { key: "dailylog", label: `${t.dailyLog}`, icon: ClipboardList }
         ].map((item) => {
           const Icon = item.icon;
           return (
@@ -455,14 +383,7 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-slate-400 uppercase">What Happened? (Dictate possible)</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("details", incident, setIncident)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "details" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400 hover:text-slate-200"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
+                  <label className="block text-xs font-bold text-slate-400 uppercase">What Happened?</label>
                 </div>
                 <textarea
                   placeholder="e.g. A small smoke trigger was noted on electrical DB board 2. We used CO2 fire extinguisher..."
@@ -476,13 +397,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Actions Taken</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("actionTaken", incident, setIncident)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "actionTaken" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <input
                   type="text"
@@ -583,13 +497,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Reason for Leave Request</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("reason", leave, setLeave)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "reason" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <textarea
                   placeholder="Describe your reasoning. E.g. Urgent family emergency in my native village requiring me to travel."
@@ -643,13 +550,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Reason for Delay</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("delayReason", late, setLate)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "delayReason" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <input
                   type="text"
@@ -824,13 +724,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Assets & Accessories Status</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("assetsStatus", handover, setHandover)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "assetsStatus" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <input
                   type="text"
@@ -844,13 +737,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Outstanding Operations / Messages</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("outstandingIssues", handover, setHandover)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "outstandingIssues" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <textarea
                   placeholder="e.g. CCTV monitor number 4 flickers slightly, supervisor was alerted."
@@ -903,13 +789,6 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-400 uppercase">Hourly Logging Activities (Line-by-Line)</label>
-                  <button
-                    type="button"
-                    onClick={() => startSpeechRecognitionForField("logDetails", dailyLog, setDailyLog)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${activeVoiceField === "logDetails" ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 dark:bg-slate-950 text-slate-400"}`}
-                  >
-                    <Mic className="w-3 h-3" /> Voice
-                  </button>
                 </div>
                 <textarea
                   placeholder="E.g.&#10;08:00 - Shift start, briefing completed&#10;12:00 - Perimeter locks check, all safe&#10;16:00 - Material entry logged"
@@ -938,7 +817,7 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
         <div className={`p-5 border rounded-xl space-y-4 shadow-sm flex flex-col justify-between ${darkMode ? "bg-slate-900/65 border-slate-800" : "bg-white border-slate-200"}`}>
           <div className="space-y-3 flex-1 flex flex-col justify-start">
             <span className="text-xs font-bold uppercase tracking-wide text-blue-600 flex items-center gap-1">
-              ✅ तैयार की हुई रिपोर्ट (Your Formatted Report)
+              ✅ Your Formatted Report
             </span>
 
             {outputText ? (
@@ -948,8 +827,8 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg border-slate-200 text-slate-500 bg-slate-50/50">
                 <FileText className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
-                <span className="text-xs font-bold text-slate-700">आपकी रिपोर्ट यहाँ बनकर तैयार होगी</span>
-                <span className="text-[11px] mt-1 text-slate-500">बाएं (left) तरफ फॉर्म भरें और नीचे "Generate" बटन दबाएं.</span>
+                <span className="text-xs font-bold text-slate-700">Your report will be generated here</span>
+                <span className="text-[11px] mt-1 text-slate-500">Fill out the form on the left and click the generate button.</span>
               </div>
             )}
           </div>
@@ -963,12 +842,12 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
                 {copied ? (
                   <>
                     <Check className="w-4 h-4" />
-                    कॉपी हो गया! (Copied)
+                    Copied!
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    📋 WhatsApp के लिए कॉपी (Copy message)
+                    📋 Copy for WhatsApp
                   </>
                 )}
               </button>
@@ -978,7 +857,7 @@ export default function FormsView({ lang, darkMode, onSaveReport, activeTab, set
                 className="inline-flex items-center justify-center gap-2 py-3 px-3 font-bold text-xs border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 rounded-lg transition shadow-sm"
               >
                 <FileDown className="w-4 h-4 text-blue-500" />
-                📥 PDF डाउनलोड (PDF)
+                📥 Download PDF
               </button>
             </div>
           )}

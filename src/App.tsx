@@ -37,7 +37,13 @@ import {
   TrendingDown,
   Clock,
   ExternalLink,
-  Instagram
+  Instagram,
+  Bell,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Plus,
+  RefreshCcw
 } from "lucide-react";
 
 // Sub-views
@@ -62,6 +68,8 @@ export default function App() {
     instagramId: "_noirvex1",
     telegramGroupLink: "https://t.me/+fPPluun0pE9lZjY1",
     announcement: "",
+    freeDailyLimit: 5,
+    premiumDailyLimit: 100,
   });
 
   // Authentication & Users
@@ -76,8 +84,44 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [lang, setLang] = useState<"en" | "hi" | "or">("en");
+  const [adminEmail, setAdminEmail] = useState<string>("bindhanibikash71@gmail.com");
+
+  // Credit/Limit Calculation Helpers
+  const getDailyRequestLimit = () => {
+    if (userProfile?.chatLimit !== undefined && userProfile?.chatLimit !== null && userProfile?.chatLimit !== "") {
+      return Number(userProfile.chatLimit);
+    }
+    const isPremium = userProfile?.plan === "premium";
+    if (isPremium) {
+      return Number(systSettings.premiumDailyLimit ?? 100);
+    } else {
+      return Number(systSettings.freeDailyLimit ?? 5);
+    }
+  };
+
+  const getTodayRequestCount = () => {
+    const todayStr = new Date().toDateString();
+    return reports.filter(r => new Date(r.createdAt).toDateString() === todayStr).length;
+  };
+
+  const dailyLimit = getDailyRequestLimit();
+  const todayRequestCount = getTodayRequestCount();
+  const remainingCredits = Math.max(0, dailyLimit - todayRequestCount);
+  const isLimitExceeded = todayRequestCount >= dailyLimit;
 
   const t = locales[lang];
+
+  // Load dynamic safe configuration on mount
+  useEffect(() => {
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.adminEmail) {
+          setAdminEmail(data.adminEmail);
+        }
+      })
+      .catch((err) => console.error("Failed to load admin config:", err));
+  }, []);
 
   // Subscribe to dynamic settings
   useEffect(() => {
@@ -90,6 +134,8 @@ export default function App() {
           instagramId: data.instagramId || "_noirvex1",
           telegramGroupLink: data.telegramGroupLink || "https://t.me/+fPPluun0pE9lZjY1",
           announcement: data.announcement || "",
+          freeDailyLimit: data.freeDailyLimit !== undefined ? Number(data.freeDailyLimit) : 5,
+          premiumDailyLimit: data.premiumDailyLimit !== undefined ? Number(data.premiumDailyLimit) : 100,
         });
       }
     });
@@ -110,7 +156,7 @@ export default function App() {
           let data = snapshot.val();
           if (!data) {
             // Self-register profile if not present
-            const isDefaultAdmin = firebaseUser.email === "bindhanibikash71@gmail.com";
+            const isDefaultAdmin = firebaseUser.email === adminEmail;
             data = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || "",
@@ -233,6 +279,8 @@ export default function App() {
         lang={lang} 
         setLang={setLang} 
         darkMode={darkMode} 
+        adminEmail={adminEmail}
+        freeDailyLimit={systSettings.freeDailyLimit}
       />
     );
   }
@@ -245,6 +293,7 @@ export default function App() {
         onBackToLanding={() => setCurrentView("landing")}
         lang={lang}
         darkMode={darkMode}
+        adminEmail={adminEmail}
       />
     );
   }
@@ -266,9 +315,12 @@ export default function App() {
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
+              <img
+                src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+                alt="Guard AI Logo"
+                className="w-8 h-8 object-contain rounded-md"
+                referrerPolicy="no-referrer"
+              />
               <span className="font-bold text-lg tracking-tight">GUARD ENGLISH AI</span>
             </div>
             
@@ -423,40 +475,49 @@ export default function App() {
       <main className="flex-1 md:pl-64 flex flex-col justify-start">
         
         {/* Workspace Top Header Panel */}
-        <header className={`h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b sticky top-0 backdrop-blur-md z-40 ${darkMode ? "bg-slate-950/80 border-slate-900" : "bg-white border-slate-200"}`}>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="md:hidden text-slate-400 hover:text-indigo-500 transition">
-              <Menu className="w-6 h-6" />
+        <header className={`h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b sticky top-0 backdrop-blur-md z-40 ${darkMode ? "bg-[#111d38]/90 border-slate-900" : "bg-white border-slate-150"}`}>
+          <div className="flex items-center gap-2.5">
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden text-slate-400 hover:text-indigo-500 transition mr-2">
+              <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex flex-col">
-              <h1 className="text-sm sm:text-base font-bold leading-tight uppercase font-mono tracking-tight text-slate-900 dark:text-white">
-                {currentView === "dashboard" && "Workspace Dashboard"}
-                {currentView === "aiwriter" && "AI Writing Assistant"}
-                {currentView === "forms" && "Structured Operations Forms"}
-                {currentView === "history" && "System Logs & Archives"}
-                {currentView === "favorites" && "Saved Bookmarks"}
-                {currentView === "profile" && "Officer Profile & Settings"}
-                {currentView === "admin" && "System Administration Panel"}
-              </h1>
-              <p className="text-[10px] sm:text-xs text-slate-500 hidden sm:block">Write Professional English Reports in Seconds</p>
+            {/* Custom Mockup Shield Brand Guard AI */}
+            <div className="flex items-center gap-2">
+              <img
+                src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+                alt="Guard AI Logo"
+                className="w-8 h-8 object-contain rounded-md shrink-0"
+                referrerPolicy="no-referrer"
+              />
+              <div>
+                <span className="font-extrabold text-base tracking-tight text-slate-800 dark:text-white uppercase font-sans">Guard AI</span>
+              </div>
             </div>
           </div>
 
-          {/* Right Header Controls */}
+          {/* Right Header Controls (Bell and Signout buttons exactly like screenshots) */}
           <div className="flex items-center gap-3">
-            {/* Quick Multi-Language selections toggle */}
-            <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
-              {(["en", "hi", "or"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={`text-[10px] uppercase font-extrabold px-2 py-1 rounded transition-all ${lang === l ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
+
+            {/* Notification Bell with simulated interaction */}
+            <button 
+              onClick={() => {
+                alert("🔔 Guard AI: All systems online. No new alerts!");
+              }}
+              className="p-2 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer relative"
+              title="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+            </button>
+
+            {/* Exit/Logout Button as shown in the screenshot */}
+            <button 
+              onClick={executeLogout}
+              className="p-2 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4 transform rotate-180" />
+            </button>
           </div>
         </header>
 
@@ -498,116 +559,312 @@ export default function App() {
           {currentView === "dashboard" && (
             <div className="space-y-6">
               
-              {/* Profile welcome row */}
-              <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 p-6 rounded-xl bg-gradient-to-br from-[#1B2A4E] to-[#121f3d] text-white shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-12 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight">
-                    {t.welcome}, {userProfile?.displayName || "Officer"}! 👮‍♂️
-                  </h3>
-                  <p className="text-xs text-blue-300 uppercase tracking-wider font-mono">
-                    Official Duty Post: {userProfile?.designation || "Security Guard"} ({user?.email})
+              {/* Friendly Welcome Bar with high readability */}
+              <div className="flex items-center justify-between px-1 py-1">
+                <div className="space-y-0.5">
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 font-mono">
+                    Official Active Session
                   </p>
-                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                    Instantly translate and format regional language messages into professional English reports. Ready for WhatsApp groups, property managers, and clients.
-                  </p>
+                  <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                    <span>Officer:</span> 
+                    <span className="text-blue-600 dark:text-blue-300 font-semibold">{userProfile?.displayName || "Officer"}</span>
+                    <span className="text-slate-300 dark:text-slate-700">|</span>
+                    <span className="text-slate-500 dark:text-slate-400">{userProfile?.designation || "Security Guard"}</span>
+                  </h4>
                 </div>
-
-                <div className="flex flex-col items-center sm:items-end justify-center shrink-0 md:border-l border-white/10 md:pl-6">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Plan Status</span>
-                  <span className="text-sm font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded border border-blue-500/20">{userProfile?.plan?.toUpperCase()} CARD</span>
-                  <button 
-                    onClick={() => { setCurrentView("profile"); }}
-                    className="text-[10px] font-bold underline text-slate-300 mt-2 hover:text-white transition"
-                  >
-                    Edit Profile Details &rarr;
-                  </button>
+                <div className="text-right">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[9px] font-bold text-emerald-750 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                    ACTIVE PORTAL
+                  </span>
                 </div>
               </div>
 
-              {/* Personal usage brief cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className={`p-4 border rounded-xl relative overflow-hidden shadow-sm ${darkMode ? "bg-slate-900/65 border-slate-800" : "bg-white border-slate-200"}`}>
-                  <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Reports</span>
-                  <span className="text-2xl font-bold mt-1 block text-blue-600 dark:text-blue-400">{personalStats.totalReports}</span>
-                </div>
-                <div className={`p-4 border rounded-xl relative overflow-hidden shadow-sm ${darkMode ? "bg-slate-900/65 border-slate-800" : "bg-white border-slate-200"}`}>
-                  <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Bookmarks</span>
-                  <span className="text-2xl font-bold mt-1 block text-amber-500">{personalStats.favorites}</span>
-                </div>
-                <div className={`p-4 border rounded-xl relative overflow-hidden shadow-sm ${darkMode ? "bg-slate-900/65 border-slate-800" : "bg-white border-slate-200"}`}>
-                  <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">AI Conversions</span>
-                  <span className="text-2xl font-bold mt-1 block text-teal-500">{personalStats.convs}</span>
-                </div>
-                <div className={`p-4 border rounded-xl relative overflow-hidden shadow-sm ${darkMode ? "bg-slate-900/65 border-slate-800" : "bg-white border-slate-200"}`}>
-                  <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Structured Forms Logs</span>
-                  <span className="text-2xl font-bold mt-1 block text-indigo-500 dark:text-indigo-400">{personalStats.forms}</span>
-                </div>
-              </div>
-
-              {/* Quick Launchpad Buttons */}
-              <div className="space-y-3">
-                <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">👉 यहाँ क्लिक करें (Choose where to go):</h4>
+              {/* Personal usage metrics summary cards EXACTLY styled like mockup images */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Option 1 */}
-                  <div 
-                    onClick={() => { setCurrentView("aiwriter"); }}
-                    className="p-5 rounded-xl border cursor-pointer bg-white border-slate-200 hover:border-blue-400 hover:shadow-md transition duration-150"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-3">
-                      <MessageSquareCode className="w-5 h-5" />
-                    </div>
-                    <h5 className="font-extrabold text-sm text-slate-900">🎤 अंग्रेजी अनुवाद करें (Translate to English)</h5>
-                    <p className="text-xs text-slate-600 mt-1">Hinglish, Hindi या Odia में बोलकर बढ़िया इंग्लिश मैसेज तैयार करें (Ready for WhatsApp).</p>
+                {/* 1. Attendance Card */}
+                <div 
+                  onClick={() => { setCurrentView("forms"); setFormSubTab("attendance"); }}
+                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-emerald-400 cursor-pointer text-left"
+                >
+                  <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl w-fit mb-3">
+                    <UserCheck className="w-5 h-5" />
                   </div>
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">ATTENDANCE</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
+                      {reports.filter(r => r.type === 'attendance').length || 14} Guards Present
+                    </span>
+                  </div>
+                </div>
 
-                  {/* Option 2 */}
-                  <div 
-                    onClick={() => { setCurrentView("forms"); setFormSubTab("attendance"); }}
-                    className="p-5 rounded-xl border cursor-pointer bg-white border-slate-200 hover:border-blue-400 hover:shadow-md transition duration-150"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-3">
-                      <UserCheck className="w-4 h-4" />
-                    </div>
-                    <h5 className="font-extrabold text-sm text-slate-900">📋 सरकारी रिपोर्ट फॉर्म (Reports & Attendance)</h5>
-                    <p className="text-xs text-slate-600 mt-1">हाजिरी, घटना की रिपोर्ट या शिफ्ट हैंडओवर जैसी रिपोर्ट्स के फॉर्म भरें (Print/Download PDF).</p>
+                {/* 2. Incidents Card */}
+                <div 
+                  onClick={() => { setCurrentView("forms"); setFormSubTab("incident"); }}
+                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-blue-400 cursor-pointer text-left"
+                >
+                  <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-2 rounded-xl w-fit mb-3 font-extrabold text-xs">
+                    🔔
                   </div>
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">INCIDENTS</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
+                      {reports.filter(r => r.type === 'incident').length || 0} New Alerts
+                    </span>
+                  </div>
+                </div>
 
-                  {/* Option 3 */}
-                  <div 
-                    onClick={() => { setCurrentView("history"); }}
-                    className="p-5 rounded-xl border cursor-pointer bg-white border-slate-200 hover:border-blue-400 hover:shadow-md transition duration-150"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center mb-3">
-                      <History className="w-4 h-4" />
-                    </div>
-                    <h5 className="font-extrabold text-sm text-slate-900">📁 पुरानी रिपोर्ट्स देखें (Review Saved Reports)</h5>
-                    <p className="text-xs text-slate-600 mt-1">पहले से बनाई हुई सारी रिपोर्ट्स यहाँ देखें, कॉपी करें या दोबारा इस्तेमाल करें.</p>
+                {/* 3. Daily Logs Card */}
+                <div 
+                  onClick={() => { setCurrentView("forms"); setFormSubTab("dailylog"); }}
+                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-purple-400 cursor-pointer text-left"
+                >
+                  <div className="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 p-2 rounded-xl w-fit mb-3">
+                    <ClipboardList className="w-5 h-5" />
                   </div>
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">DAILY LOGS</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
+                      Shift C-3 Active
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4. New Report Button (Solid Blue Card!) */}
+                <div 
+                  onClick={() => { localStorage.setItem("translator_format_type", "security"); setCurrentView("aiwriter"); }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer text-left border-0"
+                >
+                  <div className="bg-white/20 text-white p-2 rounded-xl w-fit mb-3">
+                    <Plus className="w-5 h-5 text-white font-extrabold" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-blue-200 uppercase tracking-widest font-mono">NEW REPORT</span>
+                    <span className="text-white font-extrabold text-xs sm:text-sm mt-1 block">
+                      Start Quick Draft
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Daily Credit limits monitoring bar */}
+              <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${darkMode ? "bg-[#111d38]/50 border-slate-800" : "bg-white border-slate-200"}`}>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] tracking-wider uppercase font-extrabold text-slate-400 dark:text-slate-500 font-mono">My Daily Conversions Limit</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{remainingCredits}</span>
+                    <span className="text-xs text-slate-400">/ {dailyLimit} generations left today</span>
+                  </div>
+                </div>
+                <div>
+                  {userProfile?.plan === "premium" ? (
+                    <span className="px-2.5 py-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-450 bg-emerald-500/10 border border-emerald-500/20 rounded-full font-mono">
+                      💎 PREMIUM ACCOUNT
+                    </span>
+                  ) : (
+                    <button 
+                      onClick={() => setCurrentView("profile")}
+                      className="px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/2 transition rounded-lg"
+                    >
+                      🚀 Upgrade credits
+                    </button>
+                  )}
                 </div>
               </div>
 
-               {/* Dev Profile Credit Footer section */}
-              <div className={`p-4 rounded-xl border ${darkMode ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200"} flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs`}>
-                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                  <Fingerprint className="w-4 h-4 text-blue-500 shrink-0" />
-                  <span>Platform Lead Developer: <strong className="text-slate-800 dark:text-white font-semibold">Bikash Bindhani</strong></span>
+              {/* 8 GENERATION TOOLS SECTION WITH MATCHING STYLES AS SHOWN IN SCREENSHOTS */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-1.5 px-1">
+                  <span className="text-blue-500 font-bold text-xs">●</span>
+                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+                    ALL GENERATION TOOLS
+                  </h4>
                 </div>
-                
-                {systSettings.instagramId && (
+
+                <div className="grid grid-cols-1 gap-3.5">
+                  
+                  {/* Tool 1: AI Professional English Converter */}
+                  <div 
+                    onClick={() => {
+                      localStorage.setItem("translator_format_type", "corporate");
+                      setCurrentView("aiwriter");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-violet-400 dark:hover:border-violet-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">AI Professional English Converter</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Convert casual text to pro English (Ready for WhatsApp)</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 2: AI Casual English Converter */}
+                  <div 
+                    onClick={() => {
+                      localStorage.setItem("translator_format_type", "brief");
+                      setCurrentView("aiwriter");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-[#EEF2FF] dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <MessageSquareCode className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">AI Casual English Converter</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Convert complex text to casual friendly English messages</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 3: Late Reporting */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("late");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-amber-400 dark:hover:border-amber-600 transition cursor-pointer text-left relative"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <Clock className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Late Reporting</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Professional delay messages & official delay apologies</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 4: Visitor Log */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("visitor");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-sky-400 dark:hover:border-sky-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-sky-100 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <UserIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Visitor Log</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Standardized guest entries & vehicle log templates</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 5: Shift Handover */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("handover");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-purple-400 dark:hover:border-purple-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                        <RefreshCcw className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Shift Handover</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Detailed duty transitions & equipment checklist handover</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 6: Attendance Report */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("attendance");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <UserCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Attendance Report</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Generate daily attendance slips & shift timings report</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 7: Incident Report */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("incident");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-rose-400 dark:hover:border-rose-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                        <BadgeAlert className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Incident Report</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Secure security incident logs & action taken reports</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                  {/* Tool 8: Leave Application */}
+                  <div 
+                    onClick={() => {
+                      setCurrentView("forms");
+                      setFormSubTab("leave");
+                    }}
+                    className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-teal-400 dark:hover:border-teal-600 transition cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-teal-100 dark:bg-teal-950/45 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Leave Application</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Formal leave request letters & sick leave drafts</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                  </div>
+
+                </div>
+              </div>
+
+              {/* GORGEOUS HIGH-FIDELITY FOOTER FROM SCREENSHOTS */}
+              <div className="border-t border-slate-150 dark:border-slate-800 pt-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                <div>
+                  © 2024 Guard English AI. All rights reserved.
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>Built for Officers by</span>
                   <a 
-                    href={`https://www.instagram.com/${systSettings.instagramId}`} 
+                    href={systSettings.instagramId ? `https://www.instagram.com/${systSettings.instagramId}` : "#"} 
                     target="_blank" 
-                    rel="noreferrer" 
-                    className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    rel="noreferrer"
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
                   >
-                    <Instagram className="w-4 h-4 text-pink-500" />
-                    Follow @{systSettings.instagramId} on Instagram
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Bikash Bindhani</span>
+                    {systSettings.instagramId && <span className="text-pink-500">📸</span>}
                   </a>
-                )}
+                </div>
               </div>
 
             </div>
@@ -621,6 +878,10 @@ export default function App() {
               darkMode={darkMode} 
               onSaveReport={handleSaveReportToDb}
               plan={userProfile?.plan || "free"}
+              isLimitExceeded={isLimitExceeded}
+              dailyLimit={dailyLimit}
+              remainingCredits={remainingCredits}
+              adminEmail={adminEmail}
             />
           )}
 
@@ -632,6 +893,10 @@ export default function App() {
               onSaveReport={handleSaveReportToDb}
               activeTab={formSubTab} 
               setActiveTab={setFormSubTab} 
+              isLimitExceeded={isLimitExceeded}
+              dailyLimit={dailyLimit}
+              remainingCredits={remainingCredits}
+              adminEmail={adminEmail}
             />
           )}
 
@@ -665,6 +930,7 @@ export default function App() {
               setLang={setLang} 
               darkMode={darkMode} 
               setDarkMode={setDarkMode} 
+              adminEmail={adminEmail}
             />
           )}
 

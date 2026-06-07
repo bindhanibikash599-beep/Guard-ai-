@@ -15,6 +15,7 @@ export interface UserProfile {
   plan?: "free" | "premium";
   phoneNumber?: string;
   designation?: string;
+  chatLimit?: number | null;
 }
 
 export type ReportType = 

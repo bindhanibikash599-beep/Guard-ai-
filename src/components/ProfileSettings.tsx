@@ -27,6 +27,7 @@ interface ProfileSettingsProps {
   setLang: (lang: "en" | "hi" | "or") => void;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
+  adminEmail?: string;
 }
 
 export default function ProfileSettings({ 
@@ -35,7 +36,8 @@ export default function ProfileSettings({
   lang, 
   setLang, 
   darkMode, 
-  setDarkMode 
+  setDarkMode,
+  adminEmail = "bindhanibikash71@gmail.com"
 }: ProfileSettingsProps) {
   const t = locales[lang];
 
@@ -45,6 +47,8 @@ export default function ProfileSettings({
   const [designation, setDesignation] = useState(userProfile.designation || "Security Guard");
   const [updating, setUpdating] = useState(false);
   const [success, setSuccess] = useState("");
+
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,11 +70,16 @@ export default function ProfileSettings({
     }
   };
 
-  // Flip plan on client-side simulation directly linked to the RTDB! This is incredible and fully working!
+  // Recommend contacting Administrator's email to get upgraded
   const togglePlanUpgrade = async () => {
-    const nextPlan = userProfile.plan === "premium" ? "free" : "premium";
-    await onUpdateProfile({ plan: nextPlan });
-    alert(`Success: Your Guard English AI plan was upgraded to ${nextPlan.toUpperCase()}! Enjoy premium benefits!`);
+    if (userProfile.plan === "premium") {
+      if (window.confirm("Do you want to request downgrading your premium plan to free tier?")) {
+        await onUpdateProfile({ plan: "free" });
+        alert("Your account plan was changed to Free.");
+      }
+    } else {
+      alert(`Premium features actuate instantly! To upgrade to Premium, please contact our administrator directly on Email:\n\n👉  ${adminEmail}  👈\n\nYour account will be upgraded immediately upon review.`);
+    }
   };
 
   return (
@@ -177,30 +186,6 @@ export default function ProfileSettings({
               {updating ? "Saving adjustments..." : "Save My Details"}
             </button>
           </form>
-
-          {/* Core App Preferences (Language & Theme Toggle) */}
-          <div className="border-t dark:border-slate-800 pt-4 space-y-3">
-            <h4 className="font-bold text-sm flex items-center gap-2 text-slate-850 dark:text-slate-200">
-              <Globe className="text-blue-500 w-4 h-4" /> App Preferences
-            </h4>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <div className="py-2 px-3.5 rounded-lg border flex items-center justify-between dark:border-slate-800 bg-slate-950/20">
-                <span className="text-xs font-semibold">Menu Language</span>
-                <div className="flex gap-1">
-                  {(["en", "hi", "or"] as const).map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => setLang(l)}
-                      className={`text-[10px] px-2 py-1 rounded font-bold uppercase transition ${lang === l ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Premium Upgrade callout card */}

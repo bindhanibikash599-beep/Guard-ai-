@@ -19,9 +19,10 @@ interface LoginRegisterProps {
   onBackToLanding: () => void;
   lang: "en" | "hi" | "or";
   darkMode: boolean;
+  adminEmail: string;
 }
 
-export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMode }: LoginRegisterProps) {
+export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMode, adminEmail }: LoginRegisterProps) {
   const t = locales[lang];
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -80,7 +81,7 @@ export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMo
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || "Google Officer",
-        role: user.email === "bindhanibikash71@gmail.com" ? "admin" : "user", // Admin email bootstrap
+        role: user.email === adminEmail ? "admin" : "user", // Dynamic Admin email bootstrap
         plan: "free",
         createdAt: Date.now()
       });
@@ -105,9 +106,12 @@ export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMo
         </button>
 
         <div className="flex items-center justify-center gap-2">
-          <div className="bg-indigo-600 text-white p-3 rounded-2xl shadow-xl">
-            <Shield className="w-8 h-8" />
-          </div>
+          <img
+            src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+            alt="Guard AI Logo"
+            className="w-12 h-12 object-contain rounded-2xl"
+            referrerPolicy="no-referrer"
+          />
           <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-indigo-500 to-sky-400 bg-clip-text text-transparent">
             GUARD ENGLISH AI
           </span>

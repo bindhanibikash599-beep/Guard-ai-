@@ -23,10 +23,27 @@ let openRouterApiKey = process.env.OPENROUTER_API_KEY || "";
 
 const DB_URL = "https://security-guard-91aff-default-rtdb.firebaseio.com";
 
-// Synchronize system settings from Firebase REST URL
+// Helper for fetch with custom timeout to prevent backend routing lockups
+async function fetchWithTimeout(url: string, options: any = {}, timeoutMs: number = 2000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+// Synchronize system settings from Firebase REST URL with a short, resilient timeout
 async function fetchSystemSettings() {
   try {
-    const res = await fetch(`${DB_URL}/system/settings.json`);
+    const res = await fetchWithTimeout(`${DB_URL}/system/settings.json`, {}, 1200);
     if (res.ok) {
       const data = await res.json();
       if (data) {
@@ -36,8 +53,8 @@ async function fetchSystemSettings() {
         return data;
       }
     }
-  } catch (err) {
-    console.error("Firebase REST Sync Error:", err);
+  } catch (err: any) {
+    console.warn("Firebase REST Sync Error (falling back to memory):", err?.message || err);
   }
   return null;
 }
@@ -55,6 +72,13 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "healthy", timestamp: Date.now() });
 });
 
+// App endpoint for dynamic safe configuration
+app.get("/api/config", (req, res) => {
+  res.json({
+    adminEmail: process.env.ADMIN_EMAIL || "bindhanibikash71@gmail.com"
+  });
+});
+
 // Get AI Analytics Stats for Admin Panel
 app.get("/api/admin/stats", async (req, res) => {
   await fetchSystemSettings();
@@ -70,13 +94,13 @@ app.get("/api/admin/stats", async (req, res) => {
 
 // Admin endpoint to override settings and save to Firebase Realtime Database
 app.post("/api/admin/settings", async (req, res) => {
-  const { model, apiKey, instagramId, telegramGroupLink, announcement } = req.body;
+  const { model, apiKey, instagramId, telegramGroupLink, announcement, freeDailyLimit, premiumDailyLimit } = req.body;
   
   if (model) defaultModel = model;
   if (apiKey !== undefined) openRouterApiKey = apiKey;
 
   try {
-    const backupRes = await fetch(`${DB_URL}/system/settings.json`);
+    const backupRes = await fetchWithTimeout(`${DB_URL}/system/settings.json`, {}, 2000);
     let currentData = {};
     if (backupRes.ok) {
       currentData = (await backupRes.json()) || {};
@@ -88,16 +112,18 @@ app.post("/api/admin/settings", async (req, res) => {
       ...(instagramId !== undefined && { instagramId }),
       ...(telegramGroupLink !== undefined && { telegramGroupLink }),
       ...(announcement !== undefined && { announcement }),
+      ...(freeDailyLimit !== undefined && { freeDailyLimit }),
+      ...(premiumDailyLimit !== undefined && { premiumDailyLimit }),
       updatedAt: Date.now()
     };
-    await fetch(`${DB_URL}/system/settings.json`, {
+    await fetchWithTimeout(`${DB_URL}/system/settings.json`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(merged)
-    });
+    }, 2500);
     console.log("[Firebase Write] Configuration saved persistently!");
-  } catch (err) {
-    console.error("Firebase settings put failure:", err);
+  } catch (err: any) {
+    console.warn("Firebase settings put failure (timeout/offline):", err?.message || err);
   }
 
   res.json({ success: true, model: defaultModel, hasKey: !!openRouterApiKey });
@@ -161,7 +187,7 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
 
   try {
     console.log(`Using OpenRouter API with model ${modelToUse}...`);
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -177,7 +203,7 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
         ],
         temperature: 0.7,
       }),
-    });
+    }, 15000);
 
     if (!response.ok) {
       const errorText = await response.text();
