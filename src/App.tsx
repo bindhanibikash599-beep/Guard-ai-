@@ -668,7 +668,7 @@ export default function App() {
                     <UserCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">ATTENDANCE</span>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">ATTENDANCE</span>
                     <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
                       {reports.filter(r => r.type === 'attendance').length || 14} Guards Present
                     </span>
@@ -684,7 +684,7 @@ export default function App() {
                     🔔
                   </div>
                   <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">INCIDENTS</span>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">INCIDENTS</span>
                     <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
                       {reports.filter(r => r.type === 'incident').length || 0} New Alerts
                     </span>
@@ -700,7 +700,7 @@ export default function App() {
                     <ClipboardList className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-mono">DAILY LOGS</span>
+                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">DAILY LOGS</span>
                     <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
                       Shift C-3 Active
                     </span>
@@ -774,11 +774,11 @@ export default function App() {
                         <Sparkles className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">AI Professional English Converter</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Convert casual text to pro English (Ready for WhatsApp)</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">AI Professional English Converter</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Convert casual text to pro English (Ready for WhatsApp)</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 2: AI Casual English Converter */}
@@ -794,11 +794,11 @@ export default function App() {
                         <MessageSquareCode className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">AI Casual English Converter</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Convert complex text to casual friendly English messages</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">AI Casual English Converter</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Convert complex text to casual friendly English messages</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 3: Late Reporting */}
@@ -814,11 +814,11 @@ export default function App() {
                         <Clock className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Late Reporting</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Professional delay messages & official delay apologies</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Late Reporting</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Professional delay messages & official delay apologies</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 4: Visitor Log */}
@@ -834,11 +834,11 @@ export default function App() {
                         <UserIcon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Visitor Log</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Standardized guest entries & vehicle log templates</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Visitor Log</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Standardized guest entries & vehicle log templates</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 5: Shift Handover */}
@@ -854,11 +854,11 @@ export default function App() {
                         <RefreshCcw className="w-4 h-4" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Shift Handover</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Detailed duty transitions & equipment checklist handover</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Shift Handover</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Detailed duty transitions & equipment checklist handover</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 6: Attendance Report */}
@@ -874,11 +874,11 @@ export default function App() {
                         <UserCheck className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Attendance Report</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Generate daily attendance slips & shift timings report</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Attendance Report</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Generate daily attendance slips & shift timings report</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 7: Incident Report */}
@@ -894,11 +894,11 @@ export default function App() {
                         <BadgeAlert className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Incident Report</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Secure security incident logs & action taken reports</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Incident Report</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Secure security incident logs & action taken reports</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                   {/* Tool 8: Leave Application */}
@@ -914,11 +914,11 @@ export default function App() {
                         <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-150">Leave Application</h5>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Formal leave request letters & sick leave drafts</p>
+                        <h5 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">Leave Application</h5>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mt-0.5">Formal leave request letters & sick leave drafts</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-350 dark:text-slate-600 shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-400 shrink-0" />
                   </div>
 
                 </div>
