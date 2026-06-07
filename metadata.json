@@ -1,0 +1,6 @@
+{
+  "name": "Guard English AI",
+  "description": "Convert local language messages (Hindi, Odia, Bengali, Tamil, Telugu, Hinglish) into professional English reports in seconds. Specially made for security teams, supervisors, and field workers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
