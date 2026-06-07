@@ -6,6 +6,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 
 dotenv.config();
@@ -239,7 +240,14 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
 
 // Configure Vite middleware or serve static static build
 async function setupVite() {
-  if (process.env.NODE_ENV !== "production") {
+  const distPath = path.join(process.cwd(), "dist");
+  // Check if we are running in production mode, if dist/index.html exists, or if compiled code is running inside /dist
+  const isProductionMode = 
+    process.env.NODE_ENV === "production" || 
+    fs.existsSync(path.join(distPath, "index.html")) || 
+    __dirname.includes("dist");
+
+  if (!isProductionMode) {
     console.log("Extending dev environment with Vite middleware...");
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -248,10 +256,13 @@ async function setupVite() {
     app.use(vite.middlewares);
   } else {
     console.log("Serving production build from dist...");
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    let resolvedDistPath = distPath;
+    if (__dirname.endsWith("dist") || __dirname.includes("dist")) {
+      resolvedDistPath = __dirname;
+    }
+    app.use(express.static(resolvedDistPath));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      res.sendFile(path.join(resolvedDistPath, "index.html"));
     });
   }
 

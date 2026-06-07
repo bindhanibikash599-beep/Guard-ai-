@@ -169,8 +169,24 @@ export default function App() {
           }
           setUserProfile(data);
           
-          // Go to workspace on successful load
-          setCurrentView("dashboard");
+          // Go to workspace on successful load or deep routing to the requested page
+          const path = window.location.pathname;
+          const hash = window.location.hash;
+          if ((path === "/admin" || path.endsWith("/admin") || hash === "#admin" || hash.endsWith("admin")) && data.role === "admin") {
+            setCurrentView("admin");
+          } else if (path === "/aiwriter" || hash === "#aiwriter") {
+            setCurrentView("aiwriter");
+          } else if (path === "/forms" || hash === "#forms") {
+            setCurrentView("forms");
+          } else if (path === "/history" || hash === "#history") {
+            setCurrentView("history");
+          } else if (path === "/favorites" || hash === "#favorites") {
+            setCurrentView("favorites");
+          } else if (path === "/profile" || hash === "#profile") {
+            setCurrentView("profile");
+          } else {
+            setCurrentView("dashboard");
+          }
         });
 
         // Load Personal Reports History
@@ -191,13 +207,61 @@ export default function App() {
       } else {
         setUserProfile(null);
         setReports([]);
-        setCurrentView("landing");
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        if (path === "/admin" || path.endsWith("/admin") || hash === "#admin" || hash.endsWith("admin")) {
+          setCurrentView("auth");
+        } else {
+          setCurrentView("landing");
+        }
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
+  // Sync URL address bar with currentView tab changes
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (currentView === "admin") {
+      if (path !== "/admin") window.history.pushState(null, "", "/admin");
+    } else if (currentView === "dashboard") {
+      if (path !== "/" && path !== "/dashboard") window.history.pushState(null, "", "/");
+    } else if (currentView === "landing") {
+      if (path !== "/") window.history.pushState(null, "", "/");
+    } else if (currentView === "auth") {
+      if (path !== "/auth") window.history.pushState(null, "", "/auth");
+    } else {
+      if (path !== `/${currentView}`) window.history.pushState(null, "", `/${currentView}`);
+    }
+  }, [currentView]);
+
+  // Support native browser Back/Forward navigation buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === "/admin") {
+        if (userProfile?.role === "admin") {
+          setCurrentView("admin");
+        } else {
+          setCurrentView("auth");
+        }
+      } else if (path === "/auth") {
+        setCurrentView(user ? "dashboard" : "auth");
+      } else if (path === "/" || path === "") {
+        setCurrentView(user ? "dashboard" : "landing");
+      } else {
+        const view = path.substring(1);
+        const validViews = ["dashboard", "aiwriter", "forms", "history", "favorites", "profile"];
+        if (validViews.includes(view)) {
+          setCurrentView(user ? view : "landing");
+        }
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [user, userProfile]);
 
   // Sync Dark Mode state to index.html HTML element classes
   useEffect(() => {
