@@ -52,11 +52,12 @@ export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMo
         await updateProfile(user, { displayName });
 
         // Seed to RTDB Realtime Database
+        const isDefaultAdmin = user.email && adminEmail && user.email.toLowerCase() === adminEmail.toLowerCase();
         await set(ref(rtdb, `users/${user.uid}`), {
           uid: user.uid,
           email: user.email,
           displayName,
-          role: "user",
+          role: isDefaultAdmin ? "admin" : "user",
           plan: "free",
           createdAt: Date.now()
         });

@@ -260,8 +260,20 @@ async function setupVite() {
     if (__dirname.endsWith("dist") || __dirname.includes("dist")) {
       resolvedDistPath = __dirname;
     }
+    
+    // Serve static files
     app.use(express.static(resolvedDistPath));
+    
+    // Prevent serving index.html for missing assets
+    app.use("/assets", (req, res) => {
+      res.status(404).send("Asset not found");
+    });
+    
+    // SPA fallback for HTML routes
     app.get("*", (req, res) => {
+      if (req.path.includes(".") || req.path.startsWith("/api/")) {
+        return res.status(404).send("Not Found");
+      }
       res.sendFile(path.join(resolvedDistPath, "index.html"));
     });
   }

@@ -154,9 +154,10 @@ export default function App() {
         
         onValue(profileRef, async (snapshot) => {
           let data = snapshot.val();
+          const isDefaultAdmin = firebaseUser.email && adminEmail && firebaseUser.email.toLowerCase() === adminEmail.toLowerCase();
+          
           if (!data) {
             // Self-register profile if not present
-            const isDefaultAdmin = firebaseUser.email === adminEmail;
             data = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || "",
@@ -166,6 +167,10 @@ export default function App() {
               createdAt: Date.now()
             };
             await set(profileRef, data);
+          } else if (isDefaultAdmin && data.role !== "admin") {
+            // Force role to admin if database is out of sync
+            data.role = "admin";
+            await set(ref(rtdb, `users/${firebaseUser.uid}/role`), "admin");
           }
           setUserProfile(data);
           
