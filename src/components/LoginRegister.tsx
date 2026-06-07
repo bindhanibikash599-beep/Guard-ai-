@@ -52,13 +52,20 @@ export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMo
         await updateProfile(user, { displayName });
 
         // Seed to RTDB Realtime Database
-        const isDefaultAdmin = user.email && adminEmail && user.email.toLowerCase() === adminEmail.toLowerCase();
+        const checkIfAdmin = (emailStr: string | null | undefined) => {
+          if (!emailStr) return false;
+          const norm = emailStr.toLowerCase().trim();
+          const list = ["bindhanibikash71@gmail.com", "bindhanibikash715@gmail.com"];
+          if (adminEmail) list.push(adminEmail.toLowerCase().trim());
+          return list.includes(norm);
+        };
+        const isDefaultAdmin = checkIfAdmin(user.email);
         await set(ref(rtdb, `users/${user.uid}`), {
           uid: user.uid,
           email: user.email,
           displayName,
           role: isDefaultAdmin ? "admin" : "user",
-          plan: "free",
+          plan: isDefaultAdmin ? "premium" : "free",
           createdAt: Date.now()
         });
       }
@@ -77,13 +84,22 @@ export default function LoginRegister({ onSuccess, onBackToLanding, lang, darkMo
     try {
       const user = await signInWithGoogle();
       
+      const checkIfAdmin = (emailStr: string | null | undefined) => {
+        if (!emailStr) return false;
+        const norm = emailStr.toLowerCase().trim();
+        const list = ["bindhanibikash71@gmail.com", "bindhanibikash715@gmail.com"];
+        if (adminEmail) list.push(adminEmail.toLowerCase().trim());
+        return list.includes(norm);
+      };
+      const isDefaultAdmin = checkIfAdmin(user.email);
+
       // Seed user record on Google login if it doesn't already exist.
       await set(ref(rtdb, `users/${user.uid}`), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || "Google Officer",
-        role: user.email === adminEmail ? "admin" : "user", // Dynamic Admin email bootstrap
-        plan: "free",
+        role: isDefaultAdmin ? "admin" : "user", // Dynamic Admin email bootstrap
+        plan: isDefaultAdmin ? "premium" : "free",
         createdAt: Date.now()
       });
 

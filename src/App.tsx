@@ -154,7 +154,14 @@ export default function App() {
         
         onValue(profileRef, async (snapshot) => {
           let data = snapshot.val();
-          const isDefaultAdmin = firebaseUser.email && adminEmail && firebaseUser.email.toLowerCase() === adminEmail.toLowerCase();
+          const checkIfAdmin = (emailStr: string | null | undefined) => {
+            if (!emailStr) return false;
+            const norm = emailStr.toLowerCase().trim();
+            const list = ["bindhanibikash71@gmail.com", "bindhanibikash715@gmail.com"];
+            if (adminEmail) list.push(adminEmail.toLowerCase().trim());
+            return list.includes(norm);
+          };
+          const isDefaultAdmin = checkIfAdmin(firebaseUser.email);
           
           if (!data) {
             // Self-register profile if not present
@@ -163,14 +170,16 @@ export default function App() {
               email: firebaseUser.email || "",
               displayName: firebaseUser.displayName || "Officer Profile",
               role: isDefaultAdmin ? "admin" : "user",
-              plan: "free",
+              plan: isDefaultAdmin ? "premium" : "free",
               createdAt: Date.now()
             };
             await set(profileRef, data);
-          } else if (isDefaultAdmin && data.role !== "admin") {
+          } else if (isDefaultAdmin && (data.role !== "admin" || data.plan !== "premium")) {
             // Force role to admin if database is out of sync
             data.role = "admin";
+            data.plan = "premium";
             await set(ref(rtdb, `users/${firebaseUser.uid}/role`), "admin");
+            await set(ref(rtdb, `users/${firebaseUser.uid}/plan`), "premium");
           }
           setUserProfile(data);
           
@@ -231,7 +240,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [adminEmail]);
 
   // Sync URL address bar with currentView tab changes
   useEffect(() => {
