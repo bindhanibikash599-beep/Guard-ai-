@@ -271,7 +271,8 @@ async function setupVite() {
     
     // SPA fallback for HTML routes
     app.get("*", (req, res) => {
-      if (req.path.includes(".") || req.path.startsWith("/api/")) {
+      const isPHPAdmin = req.path === "/admin.php" || req.path.endsWith("/admin.php");
+      if ((req.path.includes(".") && !isPHPAdmin) || req.path.startsWith("/api/")) {
         return res.status(404).send("Not Found");
       }
       res.sendFile(path.join(resolvedDistPath, "index.html"));

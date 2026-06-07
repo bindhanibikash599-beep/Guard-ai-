@@ -177,7 +177,11 @@ export default function App() {
           // Go to workspace on successful load or deep routing to the requested page
           const path = window.location.pathname;
           const hash = window.location.hash;
-          if ((path === "/admin" || path.endsWith("/admin") || hash === "#admin" || hash.endsWith("admin")) && data.role === "admin") {
+          const isAdminPath = (p: string, h: string) => {
+            return p === "/admin" || p === "/admin.php" || p.endsWith("/admin") || p.endsWith("/admin.php") || h === "#admin" || h === "#admin.php" || h.endsWith("admin") || h.endsWith("admin.php");
+          };
+
+          if (isAdminPath(path, hash) && data.role === "admin") {
             setCurrentView("admin");
           } else if (path === "/aiwriter" || hash === "#aiwriter") {
             setCurrentView("aiwriter");
@@ -214,7 +218,10 @@ export default function App() {
         setReports([]);
         const path = window.location.pathname;
         const hash = window.location.hash;
-        if (path === "/admin" || path.endsWith("/admin") || hash === "#admin" || hash.endsWith("admin")) {
+        const isAdminPath = (p: string, h: string) => {
+          return p === "/admin" || p === "/admin.php" || p.endsWith("/admin") || p.endsWith("/admin.php") || h === "#admin" || h === "#admin.php" || h.endsWith("admin") || h.endsWith("admin.php");
+        };
+        if (isAdminPath(path, hash)) {
           setCurrentView("auth");
         } else {
           setCurrentView("landing");
@@ -230,13 +237,13 @@ export default function App() {
   useEffect(() => {
     const path = window.location.pathname;
     if (currentView === "admin") {
-      if (path !== "/admin") window.history.pushState(null, "", "/admin");
+      if (path !== "/admin" && path !== "/admin.php") window.history.pushState(null, "", "/admin.php");
     } else if (currentView === "dashboard") {
       if (path !== "/" && path !== "/dashboard") window.history.pushState(null, "", "/");
     } else if (currentView === "landing") {
       if (path !== "/") window.history.pushState(null, "", "/");
     } else if (currentView === "auth") {
-      if (path !== "/auth" && path !== "/admin") window.history.pushState(null, "", "/auth");
+      if (path !== "/auth" && path !== "/admin" && path !== "/admin.php") window.history.pushState(null, "", "/auth");
     } else {
       if (path !== `/${currentView}`) window.history.pushState(null, "", `/${currentView}`);
     }
@@ -246,7 +253,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === "/admin") {
+      if (path === "/admin" || path === "/admin.php") {
         if (userProfile?.role === "admin") {
           setCurrentView("admin");
         } else {
