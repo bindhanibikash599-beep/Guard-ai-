@@ -19,7 +19,7 @@ app.use(express.json());
 // In-memory analytics counter for admin dashboard
 let apiRequestCount = 0;
 let totalTokensUsed = 0;
-let defaultModel = "z-ai/glm-4.5-air:free";
+let defaultModel = "openai/gpt-oss-20b:free";
 let openRouterApiKey = process.env.OPENROUTER_API_KEY || "";
 
 const DB_URL = "https://security-guard-91aff-default-rtdb.firebaseio.com";
@@ -174,7 +174,7 @@ Output ONLY the final converted message ready to copy and paste. Do not write an
   const apiKeyToUse = selectedKey;
 
   function modelToUseValue(model: string) {
-    return model && model.trim() !== "" ? model : "z-ai/glm-4.5-air:free";
+    return model && model.trim() !== "" ? model : "openai/gpt-oss-20b:free";
   }
 
   if (!apiKeyToUse || apiKeyToUse.trim() === "") {

@@ -43,7 +43,8 @@ import {
   CheckCircle2,
   ChevronRight,
   Plus,
-  RefreshCcw
+  RefreshCcw,
+  ArrowLeft
 } from "lucide-react";
 
 // Sub-views
@@ -64,7 +65,7 @@ export default function App() {
 
   // Dynamic social handles and broadcast settings from Admin database
   const [systSettings, setSystSettings] = useState({
-    modelId: "z-ai/glm-4.5-air:free",
+    modelId: "openai/gpt-oss-20b:free",
     instagramId: "_noirvex1",
     telegramGroupLink: "https://t.me/+fPPluun0pE9lZjY1",
     announcement: "",
@@ -130,7 +131,7 @@ export default function App() {
       const data = snapshot.val();
       if (data) {
         setSystSettings({
-          modelId: data.modelId || "z-ai/glm-4.5-air:free",
+          modelId: data.modelId || "openai/gpt-oss-20b:free",
           instagramId: data.instagramId || "_noirvex1",
           telegramGroupLink: data.telegramGroupLink || "https://t.me/+fPPluun0pE9lZjY1",
           announcement: data.announcement || "",
@@ -390,6 +391,66 @@ export default function App() {
     convs: reports.filter((r) => r.type === "conv").length,
     forms: reports.filter((r) => r.type !== "conv").length,
   };
+
+  // C. Super-secure Standalone Full-screen Admin Panel (Separate Layout)
+  if (currentView === "admin") {
+    if (userProfile?.role !== "admin") {
+      return (
+        <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 text-slate-100 p-4">
+          <p className="text-red-500 font-bold mb-2">ACCESS DENIED</p>
+          <p className="text-sm text-slate-400 font-mono">You are not authorized to view the system dashboard.</p>
+          <button 
+            onClick={() => setCurrentView("dashboard")} 
+            className="mt-4 px-4 py-2 bg-indigo-600 rounded-lg text-xs font-bold font-mono transition-all hover:bg-indigo-700"
+          >
+            RETURN TO USER DASHBOARD
+          </button>
+        </div>
+      );
+    }
+    
+    return (
+      <div className={`min-h-screen transition-colors duration-200 ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-800"}`}>
+        <header className={`h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b sticky top-0 backdrop-blur-md z-40 ${darkMode ? "bg-[#111d38]/90 border-blue-950/60" : "bg-white border-slate-200"}`}>
+          <div className="flex items-center gap-3">
+            <img
+              src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+              alt="Guard AI Logo"
+              className="w-8 h-8 object-contain rounded-md"
+              referrerPolicy="no-referrer"
+            />
+            <div>
+              <span className="font-extrabold text-sm sm:text-base tracking-tight block uppercase text-blue-600 dark:text-blue-400 font-mono">GUARD AI SECURE ADMIN PORTAL</span>
+              <span className="text-[9px] font-mono font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Authorized Operations Control</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`p-2 rounded-xl border transition text-sm ${darkMode ? "bg-[#1a2948] border-blue-900/60 text-yellow-400" : "bg-slate-100 border-slate-200 text-slate-700"}`}
+              title="Toggle Theme"
+            >
+              {darkMode ? "☀️" : "🌙"}
+            </button>
+            <button
+              onClick={() => setCurrentView("dashboard")}
+              className="flex items-center gap-2 px-3.5 py-2 text-xs font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md font-mono"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              BACK TO USER WORKSPACE
+            </button>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          <div className={`p-6 rounded-3xl border ${darkMode ? "bg-[#111d38]/40 border-blue-900/50" : "bg-white border-slate-200"} shadow-xl`}>
+            <AdminDashboardView darkMode={darkMode} />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // C. Authenticated Main Layout
   return (
@@ -1019,10 +1080,7 @@ export default function App() {
             />
           )}
 
-          {/* 7. Super-secure Admin Dashboard Portal */}
-          {currentView === "admin" && userProfile?.role === "admin" && (
-            <AdminDashboardView darkMode={darkMode} />
-          )}
+          {/* 7. Super-secure Admin Dashboard Portal is rendered standalone separately */}
 
         </div>
       </main>

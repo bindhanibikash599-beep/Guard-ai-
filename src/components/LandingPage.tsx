@@ -375,7 +375,7 @@ Security Team`}
           {[
             {
               q: "Does Guard English AI understand Hindi and Odia natively?",
-              a: "Yes! Guard English AI is powered by z-ai/glm-4.5-air:free which natively translates Hindi, Odia, Bengali, Tamil, Telugu, and Hinglish messages into extremely professional, error-free corporate English logs in real time."
+              a: "Yes! Guard English AI is powered by openai/gpt-oss-20b:free which natively translates Hindi, Odia, Bengali, Tamil, Telugu, and Hinglish messages into extremely professional, error-free corporate English logs in real time."
             },
             {
               q: "Can I use it on my mobile phone at the site?",

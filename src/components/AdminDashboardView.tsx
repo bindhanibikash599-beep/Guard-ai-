@@ -51,12 +51,12 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
     totalRequests: 0,
     totalTokens: 0,
     estimatedCost: 0,
-    currentModel: "z-ai/glm-4.5-air:free",
+    currentModel: "openai/gpt-oss-20b:free",
     hasOpenRouterKey: false,
   });
 
   // Admin Model overrides
-  const [customModel, setCustomModel] = useState("z-ai/glm-4.5-air:free");
+  const [customModel, setCustomModel] = useState("openai/gpt-oss-20b:free");
   const [tabIndex, setTabIndex] = useState<"control" | "deploy" | "stats">("control");
 
   // Retrieve users, reports, and system settings from RTDB
@@ -415,7 +415,7 @@ gcloud run deploy guard-english-ai \\
                   onChange={(e) => setCustomModel(e.target.value)}
                   className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
                 >
-                  <option value="z-ai/glm-4.5-air:free">z-ai/glm-4.5-air:free (Free Choice)</option>
+                  <option value="openai/gpt-oss-20b:free">openai/gpt-oss-20b:free (Active Model Choice)</option>
                   <option value="google/gemini-2.5-flash">google/gemini-2.5-flash (Fast & Premium)</option>
                   <option value="google/gemini-2.5-pro">google/gemini-2.5-pro (Elite Intelligence)</option>
                   <option value="deepseek/deepseek-chat">deepseek/deepseek-chat (Economic Coder)</option>
