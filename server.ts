@@ -48,7 +48,14 @@ async function fetchSystemSettings() {
     if (res.ok) {
       const data = await res.json();
       if (data) {
-        if (data.modelId) defaultModel = data.modelId;
+        if (data.modelId) {
+          const mId = data.modelId.trim();
+          if (mId.toLowerCase().includes("glm-4.5-air")) {
+            defaultModel = "openai/gpt-oss-20b:free";
+          } else {
+            defaultModel = mId;
+          }
+        }
         if (data.openRouterApiKey !== undefined) openRouterApiKey = data.openRouterApiKey;
         console.log(`[Firebase Sync] Synchronized model: ${defaultModel}`);
         return data;
@@ -174,7 +181,14 @@ Output ONLY the final converted message ready to copy and paste. Do not write an
   const apiKeyToUse = selectedKey;
 
   function modelToUseValue(model: string) {
-    return model && model.trim() !== "" ? model : "openai/gpt-oss-20b:free";
+    if (!model || model.trim() === "") {
+      return "openai/gpt-oss-20b:free";
+    }
+    const cleaned = model.trim();
+    if (cleaned.toLowerCase().includes("glm-4.5-air")) {
+      return "openai/gpt-oss-20b:free";
+    }
+    return cleaned;
   }
 
   if (!apiKeyToUse || apiKeyToUse.trim() === "") {
