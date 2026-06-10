@@ -275,31 +275,42 @@ export default function TranslatorView({
           </div>
 
           {outputText && (
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t dark:border-slate-800">
-              <button
-                onClick={handleCopy}
-                className="inline-flex items-center justify-center gap-2 py-3 px-3 font-extrabold text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-md hover:scale-[1.03]"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    📋 Copy for WhatsApp
-                  </>
-                )}
-              </button>
+            <div className="flex flex-col gap-2 pt-4 border-t dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleCopy}
+                  className="inline-flex items-center justify-center gap-2 py-3 px-3 font-extrabold text-xs bg-indigo-650 hover:bg-slate-800 text-white rounded-lg transition shadow-md hover:scale-[1.01]"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Copied Output!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      📋 Copy Output Text
+                    </>
+                  )}
+                </button>
 
-              <button
-                onClick={handlePdfExport}
-                className="inline-flex items-center justify-center gap-2 py-3 px-3 font-bold text-xs border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 rounded-lg transition shadow-sm"
+                <button
+                  onClick={handlePdfExport}
+                  className="inline-flex items-center justify-center gap-2 py-3 px-3 font-bold text-xs border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 rounded-lg transition shadow-sm"
+                >
+                  <FileDown className="w-4 h-4 text-blue-500" />
+                  📥 Download PDF
+                </button>
+              </div>
+
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(outputText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-3 font-extrabold text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-md hover:scale-[1.01]"
               >
-                <FileDown className="w-4 h-4 text-blue-500" />
-                📥 Download PDF
-              </button>
+                <span className="text-sm">🟢</span> Direct Send to WhatsApp (व्हाट्सएप पर भेजें)
+              </a>
             </div>
           )}
         </div>

@@ -62,6 +62,9 @@ export default function App() {
   // Unauthenticated views: 'landing' | 'auth'
   const [currentView, setCurrentView] = useState<string>("landing");
   const [formSubTab, setFormSubTab] = useState<string>("attendance");
+  const [showGuide, setShowGuide] = useState<boolean>(true);
+  const [showPhrases, setShowPhrases] = useState<boolean>(true);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // Dynamic social handles and broadcast settings from Admin database
   const [systSettings, setSystSettings] = useState({
@@ -719,6 +722,88 @@ export default function App() {
                 </div>
               </div>
 
+              {/* BEGINNERS GUIDE TO USE THE PORTAL */}
+              <div className={`p-4 rounded-2xl border transition-all duration-200 ${
+                darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-indigo-50/70 border-indigo-100"
+              }`}>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💡</span>
+                    <div>
+                      <h4 className="font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-100 uppercase tracking-tight">
+                        kahan Click Karein? - Beginners Guide (बिगनर्स गाइड)
+                      </h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                        Naye security guards is guide ko read karke aashani se log generate kar sakte hain!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowGuide(!showGuide)}
+                    className="text-[10px] uppercase font-extrabold px-3 py-1 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-indigo-600 dark:text-indigo-400 rounded-lg border border-slate-200 dark:border-slate-800 transition"
+                  >
+                    {showGuide ? "Hide / छुपाएं" : "Show / दिखाएं"}
+                  </button>
+                </div>
+
+                {showGuide && (
+                  <div className="mt-4 space-y-4 border-t border-slate-200 dark:border-slate-800/80 pt-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-3 bg-white/70 dark:bg-slate-950/40 rounded-xl space-y-1.5 border border-slate-200/50 dark:border-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-extrabold text-[10px]">1</span>
+                          <h5 className="font-bold text-slate-800 dark:text-white">Tool Select Karein</h5>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Niche <strong>"ALL GENERATION TOOLS"</strong> section me se jis tarah ki report likhni h, us par click karein.
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-white/70 dark:bg-slate-950/40 rounded-xl space-y-1.5 border border-slate-200/50 dark:border-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-extrabold text-[10px]">2</span>
+                          <h5 className="font-bold text-slate-800 dark:text-white">Hindi/Mix Likhein</h5>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Apni normal aam bolchal ki bhasha me input likhein (Jaise: <em>"sir gate par ramesh check-in kiya"</em>)
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-white/70 dark:bg-slate-950/40 rounded-xl space-y-1.5 border border-slate-200/50 dark:border-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-extrabold text-[10px]">3</span>
+                          <h5 className="font-bold text-slate-800 dark:text-white">Copy ya WhatsApp</h5>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          <strong>"Convert"</strong> button dabakar pristine English log banayein, copy karein ya sidhe <strong>WhatsApp buttons</strong> se forward karein!
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                      <div>
+                        <span className="text-[8px] font-extrabold text-blue-500 font-mono tracking-widest block uppercase">⚡ 1-Click Interactive Practice</span>
+                        <p className="text-slate-700 dark:text-slate-350 font-bold text-[11px] mt-0.5">
+                          Hinglish se English convert karna seekhein. Click karke check karein!
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.setItem("translator_format_type", "security");
+                          setCurrentView("aiwriter");
+                          alert("AI English Converter khul gaya hai! Chaliye apne simple shabdo me type karke trial kijiye!");
+                        }}
+                        className="px-3.5 py-1.5 rounded-lg bg-indigo-650 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase shadow-md transition"
+                      >
+                        Try Demo Now! 🚀
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Personal usage metrics summary cards removed as requested */}
 
               {/* Daily Credit limits monitoring bar */}
@@ -918,6 +1003,106 @@ export default function App() {
                   </div>
 
                 </div>
+              </div>
+              
+              {/* INTERACTIVE DAILY PHRASES CHEAT-SHEET */}
+              <div className={`p-5 rounded-2xl border ${darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-white border-slate-200"} space-y-4`}>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📖</span>
+                    <div>
+                      <h4 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100 uppercase tracking-tight">
+                        Daily Quick English Phrases (रोज काम आने वाली अंग्रेजी बातें)
+                      </h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                        In ready-made sentences ko direct copy karke WhatsApp report me send kar sakte hain!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPhrases(!showPhrases)}
+                    className="text-[10px] uppercase font-extrabold px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-900 rounded-lg text-slate-650 dark:text-slate-350 transition"
+                  >
+                    {showPhrases ? "Hide / छुपाएं" : "Show / दिखाएं"}
+                  </button>
+                </div>
+
+                {showPhrases && (
+                  <div className="space-y-3 pt-3 border-t border-slate-150 dark:border-slate-800/60 max-h-[400px] overflow-y-auto pr-1">
+                    {[
+                      {
+                        cat: "🔄 Shift Handover",
+                        hi: "गश्त पूरी हुई, सब ठीक पाया गया।",
+                        en: "Patrol has been completed, and everything was found to be in order."
+                      },
+                      {
+                        cat: "🚪 Gate Status",
+                        hi: "सभी मुख्य गेट लॉक और पूरी तरह सुरक्षित हैं।",
+                        en: "All main gates have been securely locked and verified."
+                      },
+                      {
+                        cat: "👤 Visitor Entry",
+                        hi: "विजिटर को बिना आईडी कार्ड के अंदर जाने की अनुमति नहीं है।",
+                        en: "Visitors are strictly not permitted to enter the premises without a valid ID card."
+                      },
+                      {
+                        cat: "🚗 Parking Alert",
+                        hi: "अनधिकृत गाड़ी को नो-पार्किंग क्षेत्र से हटा दिया गया है।",
+                        en: "The unauthorized vehicle has been cleared from the no-parking zone."
+                      },
+                      {
+                        cat: "📅 Duty Report",
+                        hi: "अगली शिफ्ट के गार्ड आ गए हैं, चार्ज सफलतापूर्वक दे दिया है।",
+                        en: "The next shift guard has arrived, and duty charge has been successfully handed over."
+                      },
+                      {
+                        cat: "🔥 Fire/Safety",
+                        hi: "फायर सिलेंडर के प्रेशर चेक कर लिए गए हैं, सब वर्किंग हैं।",
+                        en: "All fire extinguishers have been inspected, and the pressure levels are in the safe range."
+                      },
+                      {
+                        cat: "⚠️ Incident Alert",
+                        hi: "सर, गेट नंबर 2 के पास पानी का पाइप लीक हो रहा है, प्लंबर को बोल दिया है।",
+                        en: "Sir, a water pipe leak has been reported near Gate No. 2. A plumber has been notified to resolve it."
+                      }
+                    ].map((item, idx) => {
+                      const isCopied = copiedIndex === idx;
+                      return (
+                        <div 
+                          key={idx}
+                          className={`p-3 rounded-xl border transition-all text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
+                            darkMode ? "bg-slate-950/45 border-slate-900 hover:border-slate-800" : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <span className="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                              {item.cat}
+                            </span>
+                            <p className="text-[10px] text-slate-400 font-medium">🇮🇳 {item.hi}</p>
+                            <p className="text-[11px] font-mono text-slate-800 dark:text-emerald-400 font-semibold italic">🇬🇧 "{item.en}"</p>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.en);
+                              setCopiedIndex(idx);
+                              setTimeout(() => setCopiedIndex(null), 2000);
+                            }}
+                            className={`px-3 py-1.5 text-[9px] font-extrabold uppercase rounded-lg transition shrink-0 ${
+                              isCopied 
+                                ? "bg-emerald-600 text-white" 
+                                : "bg-blue-600 hover:bg-blue-700 text-white"
+                            }`}
+                          >
+                            {isCopied ? "✓ Copied!" : "📋 Copy"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* GORGEOUS HIGH-FIDELITY FOOTER FROM SCREENSHOTS */}
