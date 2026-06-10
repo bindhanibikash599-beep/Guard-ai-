@@ -89,15 +89,8 @@ export default function App() {
 
   // Credit/Limit Calculation Helpers
   const getDailyRequestLimit = () => {
-    if (userProfile?.chatLimit !== undefined && userProfile?.chatLimit !== null && userProfile?.chatLimit !== "") {
-      return Number(userProfile.chatLimit);
-    }
-    const isPremium = userProfile?.plan === "premium";
-    if (isPremium) {
-      return Number(systSettings.premiumDailyLimit ?? 100);
-    } else {
-      return Number(systSettings.freeDailyLimit ?? 5);
-    }
+    // All users are gifted unlimited generations for now!
+    return 99999999;
   };
 
   const getTodayRequestCount = () => {
@@ -107,8 +100,8 @@ export default function App() {
 
   const dailyLimit = getDailyRequestLimit();
   const todayRequestCount = getTodayRequestCount();
-  const remainingCredits = Math.max(0, dailyLimit - todayRequestCount);
-  const isLimitExceeded = todayRequestCount >= dailyLimit;
+  const remainingCredits = 99999999;
+  const isLimitExceeded = false;
 
   const t = locales[lang];
 
@@ -733,8 +726,8 @@ export default function App() {
                 <div className="space-y-0.5">
                   <span className="text-[10px] tracking-wider uppercase font-extrabold text-slate-400 dark:text-slate-500 font-mono">My Daily Conversions Limit</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{remainingCredits}</span>
-                    <span className="text-xs text-slate-400">/ {dailyLimit} generations left today</span>
+                    <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">UNLIMITED</span>
+                    <span className="text-xs text-slate-400">generations left today (Gifted Mode Active)</span>
                   </div>
                 </div>
                 <div>

@@ -203,10 +203,26 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
   // Multi-tier reliable OpenRouter fallback list to handle invalid or offline models seamlessly.
   const modelsToTry = [modelToUse];
   const commonFreeFallbacks = [
+    "nousresearch/hermes-3-llama-3.1-405b:free",
+    "nvidia/llama-nemotron-rerank-vl-1b-v2:free",
+    "nvidia/nemotron-3.5-content-safety:free",
+    "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+    "nex-agi/nex-n2-pro:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "poolside/laguna-xs.2:free",
+    "poolside/laguna-m.1:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "google/gemma-4-31b-it:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "liquid/lfm-2.5-1.2b-instruct:free",
+    "openai/gpt-oss-120b:free",
+    "openai/gpt-oss-20b:free",
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "qwen/qwen3-coder:free",
     "google/gemma-2-9b-it:free",
     "meta-llama/llama-3-8b-instruct:free",
-    "qwen/qwen-2.5-7b-instruct:free",
-    "microsoft/phi-3-medium-128k-instruct:free"
+    "qwen/qwen-2.5-7b-instruct:free"
   ];
 
   for (const fallback of commonFreeFallbacks) {
@@ -267,6 +283,33 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
     const promptTokens = Math.ceil(systemPrompt.length / 4);
     const completionTokens = Math.ceil(finalResultData.length / 4);
     totalTokensUsed += (promptTokens + completionTokens);
+
+    // Automatically make the successful working model the active defaultModel
+    if (successfulModel !== modelToUse) {
+      console.log(`[Auto-Switch] Activating working model fallback: ${successfulModel}`);
+      defaultModel = successfulModel;
+      
+      // Attempt to persist the active working model to Firebase Realtime Database
+      try {
+        const backupRes = await fetchWithTimeout(`${DB_URL}/system/settings.json`, {}, 2000);
+        let currentData = {};
+        if (backupRes.ok) {
+          currentData = (await backupRes.json()) || {};
+        }
+        const merged = {
+          ...currentData,
+          modelId: successfulModel,
+          updatedAt: Date.now()
+        };
+        await fetchWithTimeout(`${DB_URL}/system/settings.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(merged)
+        }, 1500);
+      } catch (e: any) {
+        console.warn("Could not save auto-switched active model to Firebase, kept in-memory:", e?.message);
+      }
+    }
 
     return res.json({
       success: true,

@@ -416,11 +416,26 @@ gcloud run deploy guard-english-ai \\
                   onChange={(e) => setCustomModel(e.target.value)}
                   className={`w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${darkMode ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-800"}`}
                 >
-                  <option value="openai/gpt-oss-20b:free">openai/gpt-oss-20b:free (Active Model Choice)</option>
-                  <option value="google/gemini-2.5-flash">google/gemini-2.5-flash (Fast & Premium)</option>
-                  <option value="google/gemini-2.5-pro">google/gemini-2.5-pro (Elite Intelligence)</option>
-                  <option value="deepseek/deepseek-chat">deepseek/deepseek-chat (Economic Coder)</option>
-                  <option value="meta-llama/llama-3.3-70b-instruct">meta-llama/llama-3.3-70b-instruct (Llama 3)</option>
+                  <option value="nousresearch/hermes-3-llama-3.1-405b:free">hermes-3-llama-3.1-405b:free</option>
+                  <option value="nvidia/llama-nemotron-rerank-vl-1b-v2:free">nvidia/llama-nemotron-vl-1b-v2:free</option>
+                  <option value="nvidia/nemotron-3.5-content-safety:free">nvidia/nemotron-3.5-content-safety:free</option>
+                  <option value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free">dolphin-mistral-24b:free</option>
+                  <option value="nex-agi/nex-n2-pro:free">nex-n2-pro:free</option>
+                  <option value="nvidia/nemotron-3-ultra-550b-a55b:free">nvidia/nemotron-3-ultra-550b:free</option>
+                  <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">nvidia/nemotron-3-nano-omni-30b-reasoning:free</option>
+                  <option value="poolside/laguna-xs.2:free">poolside/laguna-xs.2:free</option>
+                  <option value="poolside/laguna-m.1:free">poolside/laguna-m.1:free</option>
+                  <option value="google/gemma-4-26b-a4b-it:free">google/gemma-4-26b-it:free</option>
+                  <option value="google/gemma-4-31b-it:free">google/gemma-4-31b-it:free</option>
+                  <option value="nvidia/nemotron-3-super-120b-a12b:free">nvidia/nemotron-3-super-120b:free</option>
+                  <option value="liquid/lfm-2.5-1.2b-instruct:free">liquid/lfm-2.5-1.2b:free</option>
+                  <option value="openai/gpt-oss-120b:free">openai/gpt-oss-120b:free</option>
+                  <option value="openai/gpt-oss-20b:free">openai/gpt-oss-20b:free</option>
+                  <option value="meta-llama/llama-3.2-3b-instruct:free">llama-3.2-3b-instruct:free</option>
+                  <option value="qwen/qwen3-coder:free">qwen/qwen3-coder:free</option>
+                  <option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free</option>
+                  <option value="meta-llama/llama-3-8b-instruct:free">llama-3-8b-instruct:free</option>
+                  <option value="qwen/qwen-2.5-7b-instruct:free">qwen-2.5-7b:free</option>
                 </select>
                 <input
                   type="text"
