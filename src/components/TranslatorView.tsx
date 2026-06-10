@@ -262,7 +262,7 @@ export default function TranslatorView({
             </div>
 
             {outputText ? (
-              <div className="flex-1 p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/35 font-mono text-sm leading-relaxed text-slate-800 select-all">
+              <div className="flex-1 p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/35 font-mono text-sm whitespace-pre-wrap leading-relaxed text-slate-800 select-all">
                 {outputText}
               </div>
             ) : (

@@ -115,14 +115,14 @@ export default function HistoryFavorites({ reports, onToggleFavorite, onDeleteRe
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                 <div className="space-y-1.5">
                   <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400 block">Original Text / Context</span>
-                  <div className={`p-3 rounded-lg border text-xs italic line-clamp-4 ${darkMode ? "bg-slate-950 border-slate-900 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-600"}`}>
+                  <div className={`p-3 rounded-lg border text-xs italic whitespace-pre-wrap line-clamp-4 ${darkMode ? "bg-slate-950 border-slate-900 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-600"}`}>
                     {r.originalInput || "[Form fields log representation]"}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400 block">Generated English Report</span>
-                  <div className={`p-3 rounded-lg border text-xs font-sans line-clamp-4 select-all ${darkMode ? "bg-[#111d38]/50 border-slate-900 text-slate-300" : "bg-slate-50 border-slate-100 text-slate-800"}`}>
+                  <div className={`p-3 rounded-lg border text-xs font-sans whitespace-pre-wrap line-clamp-4 select-all ${darkMode ? "bg-[#111d38]/50 border-slate-900 text-slate-300" : "bg-slate-50 border-slate-100 text-slate-800"}`}>
                     {r.formattedOutput}
                   </div>
                 </div>
