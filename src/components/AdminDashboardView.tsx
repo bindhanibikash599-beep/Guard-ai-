@@ -38,6 +38,7 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
   // Search terms
   const [userSearch, setUserSearch] = useState("");
   const [reportSearch, setReportSearch] = useState("");
+  const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
 
   // Social handles and System Announcement State
   const [instagramId, setInstagramId] = useState("_noirvex1");
@@ -80,7 +81,7 @@ export default function AdminDashboardView({ darkMode }: AdminDashboardViewProps
         const allReports: GeneratedReport[] = [];
         Object.keys(data).forEach((uid) => {
           Object.keys(data[uid]).forEach((repId) => {
-            allReports.push({ id: repId, ...data[uid][repId] });
+            allReports.push({ id: repId, uid: uid, userId: uid, ...data[uid][repId] });
           });
         });
         setReports(allReports.sort((a, b) => b.createdAt - a.createdAt));
@@ -648,34 +649,117 @@ gcloud run deploy guard-english-ai \\
             </div>
           </div>
 
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
             {filteredReports.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-6">No report logs exist</p>
             ) : (
-              filteredReports.map((r) => (
-                <div 
-                  key={r.id}
-                  className={`p-3 rounded-lg border flex items-center justify-between gap-3 text-xs ${darkMode ? "bg-slate-950/40 border-slate-900" : "bg-slate-50 border-slate-200"}`}
-                >
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <p className="font-bold flex items-center gap-1.5 text-[11px] text-slate-900 dark:text-slate-100">
-                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold">{r.type?.toUpperCase()}</span>
-                      {r.title}
-                    </p>
-                    <p className="text-[10px] text-slate-400 truncate max-w-xs">{r.formattedOutput}</p>
-                    <p className="text-[9px] text-slate-500 font-mono">Date: {new Date(r.createdAt).toLocaleString()}</p>
-                  </div>
+              filteredReports.map((r) => {
+                const creator = users.find((u) => u.uid === r.uid || u.uid === r.userId);
+                const isExpanded = expandedReportId === r.id;
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteReport(r.uid, r.id)}
-                    className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition shrink-0"
-                    title="Purge record"
+                return (
+                  <div 
+                    key={r.id}
+                    className={`p-3 rounded-lg border flex flex-col gap-2 text-xs transition-all ${
+                      darkMode ? "bg-slate-950/40 border-slate-900 hover:border-slate-800" : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                    }`}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
+                    <div className="flex items-center justify-between gap-3">
+                      <div 
+                        className="space-y-1 min-w-0 flex-1 cursor-pointer"
+                        onClick={() => setExpandedReportId(isExpanded ? null : r.id)}
+                      >
+                        <p className="font-bold flex flex-wrap items-center gap-1.5 text-[11px] text-slate-900 dark:text-slate-100">
+                          <span className="px-1.5 py-0.5 rounded text-[8px] bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold">
+                            {r.type?.toUpperCase() || "LOG"}
+                          </span>
+                          {r.title || "Untitled Translation"}
+                        </p>
+                        
+                        {/* Guard who requested translation */}
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          👤 Guard: {creator ? `${creator.displayName} (${creator.designation || "Officer"})` : "Unknown Guard"}
+                        </p>
+
+                        {!isExpanded && (
+                          <p className="text-[10px] text-slate-400 truncate max-w-md">
+                            {r.formattedOutput || r.originalInput}
+                          </p>
+                        )}
+                        <p className="text-[9px] text-slate-500 font-mono">
+                          Date: {r.createdAt ? new Date(r.createdAt).toLocaleString() : "N/A"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedReportId(isExpanded ? null : r.id)}
+                          className={`px-2 py-1 text-[10px] font-bold uppercase rounded transition ${
+                            isExpanded 
+                              ? "bg-slate-200 dark:bg-slate-800 text-slate-705 dark:text-slate-200" 
+                              : "bg-blue-600 hover:bg-blue-700 text-white"
+                          }`}
+                        >
+                          {isExpanded ? "Hide" : "Review"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReport(r.uid || r.userId, r.id)}
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                          title="Purge record"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className={`mt-2 p-3 rounded-lg space-y-3 border text-xs leading-relaxed ${
+                        darkMode ? "bg-slate-950/80 border-slate-900" : "bg-white border-slate-150"
+                      }`}>
+                        {/* Original Text */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                            Original Dialect / Casual Input Text
+                          </span>
+                          <div className="font-sans whitespace-pre-wrap text-slate-650 dark:text-slate-300 select-all bg-slate-100/40 dark:bg-slate-900/40 p-2 rounded border border-slate-200 dark:border-slate-800">
+                            {r.originalInput || "No input text record"}
+                          </div>
+                        </div>
+
+                        {/* Translated Text */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest block">
+                            Translated Perfect English Output
+                          </span>
+                          <div className="font-mono whitespace-pre-wrap text-slate-800 dark:text-emerald-400 bg-emerald-500/5 p-2 rounded border border-emerald-505/10 dark:border-emerald-500/10 select-all">
+                            {r.formattedOutput || "No output text record"}
+                          </div>
+                        </div>
+
+                        {/* Guard Profile Context */}
+                        {creator && (
+                          <div className="pt-2 border-t border-slate-150 dark:border-slate-800/80 grid grid-cols-2 gap-2 text-[10px] text-slate-450">
+                            <div>
+                              <strong className="text-slate-500 dark:text-slate-400 font-mono">Email:</strong> {creator.email || "N/A"}
+                            </div>
+                            <div>
+                              <strong className="text-slate-500 dark:text-slate-400 font-mono">Role/Designation:</strong> {creator.designation || "Guard"}
+                            </div>
+                            <div>
+                              <strong className="text-slate-500 dark:text-slate-400 font-mono">Plan status:</strong> {creator.plan || "free"}
+                            </div>
+                            <div>
+                              <strong className="text-slate-500 dark:text-slate-400 font-mono">UID:</strong> {creator.uid}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </section>

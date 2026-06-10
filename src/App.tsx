@@ -726,74 +726,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Personal usage metrics summary cards EXACTLY styled like mockup images */}
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                
-                {/* 1. Attendance Card */}
-                <div 
-                  onClick={() => { setCurrentView("forms"); setFormSubTab("attendance"); }}
-                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-emerald-400 cursor-pointer text-left"
-                >
-                  <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl w-fit mb-3">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">ATTENDANCE</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
-                      {reports.filter(r => r.type === 'attendance').length || 14} Guards Present
-                    </span>
-                  </div>
-                </div>
-
-                {/* 2. Incidents Card */}
-                <div 
-                  onClick={() => { setCurrentView("forms"); setFormSubTab("incident"); }}
-                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-blue-400 cursor-pointer text-left"
-                >
-                  <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 p-2 rounded-xl w-fit mb-3 font-extrabold text-xs">
-                    🔔
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">INCIDENTS</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
-                      {reports.filter(r => r.type === 'incident').length || 0} New Alerts
-                    </span>
-                  </div>
-                </div>
-
-                {/* 3. Daily Logs Card */}
-                <div 
-                  onClick={() => { setCurrentView("forms"); setFormSubTab("dailylog"); }}
-                  className="bg-white dark:bg-[#111d38] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-purple-400 cursor-pointer text-left"
-                >
-                  <div className="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 p-2 rounded-xl w-fit mb-3">
-                    <ClipboardList className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-widest font-mono">DAILY LOGS</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-xs sm:text-sm mt-1 block">
-                      Shift C-3 Active
-                    </span>
-                  </div>
-                </div>
-
-                {/* 4. New Report Button (Solid Blue Card!) */}
-                <div 
-                  onClick={() => { localStorage.setItem("translator_format_type", "security"); setCurrentView("aiwriter"); }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer text-left border-0"
-                >
-                  <div className="bg-white/20 text-white p-2 rounded-xl w-fit mb-3">
-                    <Plus className="w-5 h-5 text-white font-extrabold" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-blue-200 uppercase tracking-widest font-mono">NEW REPORT</span>
-                    <span className="text-white font-extrabold text-xs sm:text-sm mt-1 block">
-                      Start Quick Draft
-                    </span>
-                  </div>
-                </div>
-
-              </div>
+              {/* Personal usage metrics summary cards removed as requested */}
 
               {/* Daily Credit limits monitoring bar */}
               <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${darkMode ? "bg-[#111d38]/50 border-slate-800" : "bg-white border-slate-200"}`}>
