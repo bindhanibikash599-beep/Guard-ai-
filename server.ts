@@ -186,54 +186,86 @@ Please provide an OpenRouter API Key in the System Administration Panel to enabl
     });
   }
 
-  try {
-    console.log(`Using OpenRouter API with model ${modelToUse}...`);
-    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKeyToUse}`,
-        "HTTP-Referer": "https://guard-english-ai.com",
-        "X-Title": "Guard English AI",
-      },
-      body: JSON.stringify({
-        model: modelToUse,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text },
-        ],
-        temperature: 0.7,
-      }),
-    }, 15000);
+  // Multi-tier reliable OpenRouter fallback list to handle invalid or offline models seamlessly.
+  const modelsToTry = [modelToUse];
+  const commonFreeFallbacks = [
+    "google/gemma-2-9b-it:free",
+    "meta-llama/llama-3-8b-instruct:free",
+    "qwen/qwen-2.5-7b-instruct:free",
+    "microsoft/phi-3-medium-128k-instruct:free"
+  ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OpenRouter API responded with status ${response.status}: ${errorText}`);
+  for (const fallback of commonFreeFallbacks) {
+    if (!modelsToTry.includes(fallback)) {
+      modelsToTry.push(fallback);
     }
+  }
 
-    const data = await response.json();
-    const outputText = data.choices?.[0]?.message?.content;
-    
+  let lastErrorMsg = "";
+  let finalResultData = null;
+  let successfulModel = "";
+
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const currentModelId = modelsToTry[i];
+    try {
+      console.log(`[OpenRouter Attempt ${i + 1}/${modelsToTry.length}] Querying model: ${currentModelId}...`);
+      const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKeyToUse}`,
+          "HTTP-Referer": "https://guard-english-ai.com",
+          "X-Title": "Guard English AI",
+        },
+        body: JSON.stringify({
+          model: currentModelId,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: text },
+          ],
+          temperature: 0.7,
+        }),
+      }, 15000);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Status ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      const outputText = data.choices?.[0]?.message?.content;
+      if (outputText) {
+        finalResultData = outputText.trim();
+        successfulModel = currentModelId;
+        break; // Succeeded! Break loop.
+      } else {
+        throw new Error("Empty response payload choices structure.");
+      }
+    } catch (err: any) {
+      console.warn(`[OpenRouter Attempt ${i + 1} Failed] Model ${currentModelId} failed:`, err.message || err);
+      lastErrorMsg = err.message || JSON.stringify(err);
+      // Fall through to try the next model in the chain
+    }
+  }
+
+  if (finalResultData && successfulModel) {
     // Update token usage counts roughly
     const promptTokens = Math.ceil(systemPrompt.length / 4);
-    const completionTokens = Math.ceil((outputText || "").length / 4);
+    const completionTokens = Math.ceil(finalResultData.length / 4);
     totalTokensUsed += (promptTokens + completionTokens);
 
-    if (outputText) {
-      return res.json({
-        success: true,
-        provider: "openrouter",
-        model: modelToUse,
-        result: outputText.trim(),
-      });
-    } else {
-      throw new Error("Empty response received from OpenRouter API.");
-    }
-  } catch (e: any) {
-    console.error("OpenRouter request failed:", e.message);
+    return res.json({
+      success: true,
+      provider: "openrouter",
+      model: successfulModel,
+      requestedModel: modelToUse,
+      result: finalResultData,
+    });
+  } else {
+    console.error("All fallback models exhausted. OpenRouter compilation failed completely.", lastErrorMsg);
     return res.status(500).json({
       error: "OpenRouter API request failed. Please check your API key, query model, or panel settings.",
-      details: e.message,
+      details: lastErrorMsg,
     });
   }
 });
