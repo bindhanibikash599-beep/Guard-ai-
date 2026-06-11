@@ -44,7 +44,9 @@ import {
   ChevronRight,
   Plus,
   RefreshCcw,
-  ArrowLeft
+  ArrowLeft,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 
 // Sub-views
@@ -65,6 +67,167 @@ export default function App() {
   const [showGuide, setShowGuide] = useState<boolean>(true);
   const [showPhrases, setShowPhrases] = useState<boolean>(true);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // PWA Add-To-Home Screen Installation Hooks
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState<boolean>(false);
+
+  // Active Duty Patrol Countdown and Wake Alert states
+  const [patrolActive, setPatrolActive] = useState<boolean>(false);
+  const [patrolTimeLeft, setPatrolTimeLeft] = useState<number>(1800); // 30 minutes default
+  const [patrolPreset, setPatrolPreset] = useState<number>(30); // 30 minutes preset
+
+  // PWA Support detection
+  useEffect(() => {
+    const handleBeforePrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforePrompt);
+    window.addEventListener("appinstalled", () => {
+      setShowInstallBtn(false);
+      setDeferredPrompt(null);
+    });
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforePrompt);
+    };
+  }, []);
+
+  const handleInstallAppClick = async () => {
+    if (!deferredPrompt) {
+      alert("💡 Install Guide (इंस्टॉल गाइड):\n\n1. Chrome browser par top-right corner par complete 3 dots (⋮) par click karein.\n2. 'Add to Home screen' ya 'Install App' ko select karein!\n3. Ab ye app ki tarah directly apke phone me chalega!");
+      return;
+    }
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setShowInstallBtn(false);
+        setDeferredPrompt(null);
+      }
+    } catch (err) {
+      console.error("Installation error", err);
+    }
+  };
+
+  // Safe Audio Context Instantiator
+  const getSafeAudioCtx = (): AudioContext | null => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return null;
+      return new AudioContextClass();
+    } catch {
+      return null;
+    }
+  };
+
+  // Synthetic Whistle Sound Generator using Web Audio API nodes
+  const playRefWhistle = () => {
+    const ctx = getSafeAudioCtx();
+    if (!ctx) {
+      alert("⚠️ Audio synthesizer is not supported on this browser context.");
+      return;
+    }
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = "sine";
+      // High frequency double chirp characteristic to real metal whistle
+      osc.frequency.setValueAtTime(2300, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(2600, ctx.currentTime + 0.15);
+      osc.frequency.linearRampToValueAtTime(2300, ctx.currentTime + 0.3);
+      osc.frequency.linearRampToValueAtTime(2700, ctx.currentTime + 0.45);
+      osc.frequency.linearRampToValueAtTime(2200, ctx.currentTime + 0.6);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.85);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start();
+      osc.stop(ctx.currentTime + 0.9);
+    } catch (err) {
+      console.error("Whistle error", err);
+    }
+  };
+
+  // Synthetic Security Siren Sound Generator
+  const playSirensSound = () => {
+    const ctx = getSafeAudioCtx();
+    if (!ctx) return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(550, ctx.currentTime);
+      // Continuous oscillation sweep back and forth
+      osc.frequency.linearRampToValueAtTime(950, ctx.currentTime + 0.4);
+      osc.frequency.linearRampToValueAtTime(550, ctx.currentTime + 0.8);
+      osc.frequency.linearRampToValueAtTime(950, ctx.currentTime + 1.2);
+      osc.frequency.linearRampToValueAtTime(550, ctx.currentTime + 1.6);
+      osc.frequency.linearRampToValueAtTime(950, ctx.currentTime + 2.0);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 2.3);
+    } catch (err) {
+      console.error("Siren error", err);
+    }
+  };
+
+  // Dynamic Patrol Alert countdown interval effect
+  useEffect(() => {
+    let timerId: any = null;
+    if (patrolActive) {
+      timerId = setInterval(() => {
+        setPatrolTimeLeft((prev) => {
+          if (prev <= 1) {
+            // Sound the alert instantly!
+            playSirensSound();
+            setTimeout(() => {
+              playSirensSound();
+            }, 2300);
+            alert("⏰ PATROL TIME COMPLETED! (गश्त का समय समाप्त हुआ! चलिए राउंड लगाइये!)");
+            setPatrolActive(false);
+            return patrolPreset * 60;
+          }
+          // Periodic reminder pip sound every 2 minutes or when 10 seconds remain
+          if ((prev - 1) % 120 === 0 && prev > 10) {
+            // soft synthetic beep
+            try {
+              const ctx = getSafeAudioCtx();
+              if (ctx) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.setValueAtTime(900, ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+              }
+            } catch {}
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [patrolActive, patrolPreset]);
 
   // Dynamic social handles and broadcast settings from Admin database
   const [systSettings, setSystSettings] = useState({
@@ -701,6 +864,32 @@ export default function App() {
           {currentView === "dashboard" && (
             <div className="space-y-6">
               
+              {/* PWA DYNAMIC INSTALLATION ACTION PROMPT CARD */}
+              <div className={`p-4 rounded-2xl border bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-xl relative overflow-hidden transition-all duration-300`}>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-12 -translate-y-12"></div>
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="p-1 py-0.5 rounded bg-white/20 text-[9px] font-extrabold uppercase tracking-wide">📱 Install App Mode</span>
+                      <span className="text-[11px] font-medium text-blue-100">Highly Recommended for Chrome & Android</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold tracking-tight uppercase">
+                      Install Guard AI App! (होम स्क्रीन पर जोड़ें)
+                    </h4>
+                    <p className="text-[11px] text-blue-100 leading-snug">
+                      Apne mobile screen par asali app ki tarah behtar fullscreen experience aur instant use ke liye setup karein!
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleInstallAppClick}
+                    className="px-4 py-2.5 rounded-xl bg-white text-indigo-700 hover:bg-slate-50 font-extrabold text-xs transition duration-150 active:scale-95 shrink-0 uppercase tracking-wider"
+                  >
+                    🚀 Install App / जोड़ें
+                  </button>
+                </div>
+              </div>
+              
               {/* Friendly Welcome Bar with high readability */}
               <div className="flex items-center justify-between px-1 py-1">
                 <div className="space-y-0.5">
@@ -828,6 +1017,127 @@ export default function App() {
                       🚀 Upgrade credits
                     </button>
                   )}
+                </div>
+              </div>
+
+              {/* ACTIVE DUTY EMERGENCY & VIGILANCE TOOLKIT */}
+              <div className={`p-5 rounded-2xl border ${darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-white border-slate-200"} space-y-4 shadow-sm`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚡</span>
+                  <div>
+                    <h4 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100 uppercase tracking-tight">
+                      Active Duty Security Toolkit (सुरक्षा & गश्त टूलकिट)
+                    </h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Duty par alert rehne ke liye digital instruments (whistle, emergency siren aur night patrol alarm)!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                  
+                  {/* SOUND PANEL */}
+                  <div className={`p-4 rounded-xl border flex flex-col justify-between ${darkMode ? "bg-slate-950/45 border-slate-900" : "bg-slate-50 border-slate-150"}`}>
+                    <div>
+                      <span className="text-[8px] font-extrabold uppercase font-mono tracking-widest text-[#2563eb] dark:text-[#60a5fa] block mb-1">
+                        🔊 Sound Alarm Board (सायरन & सीटी)
+                      </span>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Apne browser se instant high-pitch whistle ya siren alert sound play karein!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <button
+                        type="button"
+                        onClick={playRefWhistle}
+                        className="py-2.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] sm:text-xs font-extrabold transition-all duration-150 flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer uppercase"
+                      >
+                        <span>🔊 Blow Whistle</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={playSirensSound}
+                        className="py-2.5 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] sm:text-xs font-extrabold transition-all duration-150 flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer uppercase"
+                      >
+                        <span>🚨 Plays Siren</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* PATROL Countdown PANEL */}
+                  <div className={`p-4 rounded-xl border flex flex-col justify-between ${darkMode ? "bg-slate-950/45 border-slate-900" : "bg-slate-50 border-slate-150"} ${patrolActive ? "ring-2 ring-blue-500/50" : ""}`}>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[8px] font-extrabold uppercase font-mono tracking-widest text-emerald-600 dark:text-emerald-400 block">
+                          ⏱️ Patrol Sleep-Check Alarm (ड्यूटी अलर्ट अलार्म)
+                        </span>
+                        {patrolActive && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Is alarm timer ko set karne se night duty par need nahi aayegi, timer finish hone par big alarm baje-ga.
+                      </p>
+                    </div>
+
+                    <div className="mt-3 space-y-3">
+                      {/* Timer Face */}
+                      <div className="flex items-center justify-between bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-slate-200/50 dark:border-slate-850">
+                        <span className="text-xs font-extrabold text-slate-500 font-mono">COUNTDOWN</span>
+                        <span className="text-lg font-mono font-bold tracking-wider text-emerald-600 dark:text-emerald-400">
+                          {Math.floor(patrolTimeLeft / 60).toString().padStart(2, "0")} : {(patrolTimeLeft % 60).toString().padStart(2, "0")}
+                        </span>
+                      </div>
+
+                      {/* Preset selector buttons */}
+                      <div className="flex gap-1 overflow-x-auto pb-1">
+                        {[1, 5, 15, 30, 45, 60].map((m) => (
+                          <button
+                            key={m}
+                            disabled={patrolActive}
+                            onClick={() => {
+                              setPatrolPreset(m);
+                              setPatrolTimeLeft(m * 60);
+                            }}
+                            className={`px-2 py-1 text-[9px] font-extrabold rounded-md transition border ${
+                              patrolPreset === m 
+                                ? "bg-blue-600 text-white border-blue-600" 
+                                : "bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 border-slate-200 dark:border-slate-800 hover:bg-slate-100"
+                            }`}
+                          >
+                            {m}M
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPatrolActive(!patrolActive)}
+                          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold uppercase transition-all duration-150 ${
+                            patrolActive 
+                              ? "bg-amber-600 hover:bg-amber-700 text-white" 
+                              : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          }`}
+                        >
+                          {patrolActive ? "⏸️ Pause Alarm" : "▶️ Start Awake Alarm"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPatrolActive(false);
+                            setPatrolTimeLeft(patrolPreset * 60);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-250 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-extrabold uppercase transition"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
                 </div>
               </div>
 
