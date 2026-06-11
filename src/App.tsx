@@ -46,7 +46,10 @@ import {
   RefreshCcw,
   ArrowLeft,
   Volume2,
-  VolumeX
+  VolumeX,
+  Search,
+  Lightbulb,
+  Wifi
 } from "lucide-react";
 
 // Sub-views
@@ -67,6 +70,7 @@ export default function App() {
   const [showGuide, setShowGuide] = useState<boolean>(false);
   const [showPhrases, setShowPhrases] = useState<boolean>(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // PWA Add-To-Home Screen Installation Hooks
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -870,529 +874,316 @@ export default function App() {
           {currentView === "dashboard" && (
             <div className="space-y-6">
               
-              {/* Sleek Combined Header: Official Session Status & Credit Info */}
-              <div className={`p-4 sm:p-5 rounded-2xl border ${
-                darkMode ? "bg-slate-900/60 border-slate-800/80 shadow-inner" : "bg-white border-slate-200/80 shadow-xs"
-              } flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-all duration-300`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                    <UserIcon className="w-5 h-5" />
+              {/* Clean Minimal Header: Displays Designation / Active compliance beautifully without cluttering */}
+              <div className={`p-4 rounded-2xl border ${
+                darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-white border-slate-200/80 shadow-xs"
+              } flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all duration-300`}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                    <UserIcon className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[9px] uppercase font-extrabold tracking-widest text-[#2563eb] dark:text-[#60a5fa] block mb-0.5 font-mono">
-                      Active Duty Officer Session
-                    </span>
-                    <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                    <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono font-bold">Officer:</span>
                       <span className="text-blue-600 dark:text-blue-300 font-semibold">{userProfile?.displayName || "Officer"}</span>
                       <span className="text-slate-300 dark:text-slate-700">|</span>
-                      <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{userProfile?.designation || "Security Officer"}</span>
+                      <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">{userProfile?.designation || "Security Officer"}</span>
                     </h4>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[9px] font-extrabold text-emerald-800 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full select-none uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[9px] font-extrabold text-emerald-800 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full select-none uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                    ACTIVE COMPLIANCE
+                    ACTIVE PORTAL
                   </span>
-                  
-                  {userProfile?.plan === "premium" ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[9px] font-extrabold text-blue-800 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full uppercase tracking-wider font-mono">
-                      💎 PREMIUM LIFETIME
+                  {userProfile?.plan === "premium" && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[8px] font-extrabold text-blue-800 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full uppercase tracking-wider font-mono">
+                      💎 PREMIUM
                     </span>
-                  ) : (
-                    <button
-                      onClick={() => setCurrentView("profile")}
-                      className="px-3 py-1 text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition rounded-full cursor-pointer animate-pulse"
-                    >
-                      🚀 UNLIMITED GIFT CHIPS
-                    </button>
                   )}
                 </div>
               </div>
 
-              {/* CORE OPERATIONAL & ENGLISH TOOLS GRID - PLACED PROMINENTLY AT THE VERY TOP */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900 pb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <h3 className="font-display font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-200 uppercase tracking-widest font-mono">
-                      Primary Command Tools (मुख्य रिपोर्टिंग बोर्ड)
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-wider font-extrabold">8 Active Tools</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  
-                  {/* Tool 1: AI Professional English Converter */}
-                  <div 
-                    onClick={() => {
+               {/* CORE OPERATIONAL & ENGLISH TOOLS GRID - PLACED PROMINENTLY AT THE VERY TOP */}
+               {(() => {
+                const allToolsList = [
+                  {
+                    id: "pro-eng",
+                    title: "AI PRO ENGLISH CONVERTER",
+                    description: "Hinglish/Regional casual text ko formal English me badlein",
+                    hiDesc: "(हिंग्लिश से ऑफिसियल इंग्लिश अनुवाद)",
+                    icon: <Sparkles className="w-5 h-5 animate-pulse" />,
+                    action: () => {
                       localStorage.setItem("translator_format_type", "corporate");
                       setCurrentView("aiwriter");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-violet-500/40 dark:hover:border-violet-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/10">
-                        <Sparkles className="w-5 h-5 animate-pulse" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">AI PRO ENGLISH CONVERTER</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hinglish/Regional casual text ko formal English me badlein</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 2: AI Casual English Converter */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-violet-100 dark:bg-[#111827] text-violet-600 dark:text-violet-400 border border-violet-500/10",
+                    borderColor: "hover:border-violet-500/40 dark:hover:border-violet-500/40"
+                  },
+                  {
+                    id: "casual-chat",
+                    title: "AI CASUAL CHAT UPGRADER",
+                    description: "Slightly friendly WhatsApp updates supervisors love",
+                    hiDesc: "(सुपरवाइज़र व्हाट्सएप चैटिंग अपग्रेड)",
+                    icon: <MessageSquareCode className="w-5 h-5" />,
+                    action: () => {
                       localStorage.setItem("translator_format_type", "brief");
                       setCurrentView("aiwriter");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-indigo-500/40 dark:hover:border-indigo-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/10">
-                        <MessageSquareCode className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">AI CASUAL CHAT UPGRADER</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Slightly friendly WhatsApp updates supervisors love</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 3: Late Reporting */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-indigo-50 dark:bg-[#111827] text-indigo-600 dark:text-indigo-400 border border-indigo-500/10",
+                    borderColor: "hover:border-indigo-500/40 dark:hover:border-indigo-500/40"
+                  },
+                  {
+                    id: "late-arrival",
+                    title: "LATE ARRIVAL SLIPS",
+                    description: "Professional delay apologies and late entry reasons",
+                    hiDesc: "(देरी से आगमन स्पष्टीकरण पत्र)",
+                    icon: <Clock className="w-5 h-5" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("late");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-amber-500/40 dark:hover:border-amber-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left relative"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/10">
-                        <Clock className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">LATE ARRIVAL SLIPS</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Professional delay apologies and late entry reasons</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-505 shrink-0" />
-                  </div>
-
-                  {/* Tool 4: Visitor Log */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-amber-50 dark:bg-[#111827] text-amber-600 dark:text-amber-400 border border-amber-500/10",
+                    borderColor: "hover:border-amber-500/40 dark:hover:border-amber-500/40"
+                  },
+                  {
+                    id: "visitor-log",
+                    title: "VISITOR LOG GUEST FORM",
+                    description: "Official gate visitor registry and credentials details",
+                    hiDesc: "(आगंतुक रजिस्टर और गेट विवरण फॉर्म)",
+                    icon: <UserIcon className="w-5 h-5" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("visitor");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-sky-500/40 dark:hover:border-sky-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-450 flex items-center justify-center shrink-0 border border-sky-500/10">
-                        <UserIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">VISITOR LOG GUEST FORM</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Official gate visitor registry and credentials details</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 5: Shift Handover */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-sky-50 dark:bg-[#111827] text-sky-600 dark:text-sky-450 border border-sky-500/10",
+                    borderColor: "hover:border-sky-500/40 dark:hover:border-sky-500/40"
+                  },
+                  {
+                    id: "handover-slip",
+                    title: "SHIFT HANDOVER SLIP",
+                    description: "Duty shift handover checklists & supervisor signatures",
+                    hiDesc: "(ड्यूटी शिफ्ट हैंडओवर रिपोर्ट)",
+                    icon: <RefreshCcw className="w-4 h-4" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("handover");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-purple-500/40 dark:hover:border-purple-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/10">
-                        <RefreshCcw className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">SHIFT HANDOVER SLIP</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duty shift handover checklists & supervisor signatures</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 6: Attendance Report */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-purple-50 dark:bg-[#111827] text-purple-600 dark:text-purple-400 border border-purple-500/10",
+                    borderColor: "hover:border-purple-500/40 dark:hover:border-purple-500/40"
+                  },
+                  {
+                    id: "attendance-summary",
+                    title: "ATTENDANCE SUMMARY",
+                    description: "Staff shift attendance registers and timings files",
+                    hiDesc: "(कर्मचारी उपस्थिति और ड्यूटी समय दर्ज करें)",
+                    icon: <UserCheck className="w-5 h-5" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("attendance");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-emerald-500/40 dark:hover:border-emerald-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/10">
-                        <UserCheck className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">ATTENDANCE SUMMARY</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Staff shift attendance registers and timings files</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 7: Incident Report */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-emerald-50 dark:bg-[#111827] text-emerald-600 dark:text-emerald-400 border border-emerald-500/10",
+                    borderColor: "hover:border-emerald-500/40 dark:hover:border-emerald-500/40"
+                  },
+                  {
+                    id: "incident-report",
+                    title: "INCIDENT & EMERGENCY WRITER",
+                    description: "Urgent event breakout records and actions logs",
+                    hiDesc: "(गंभीर घटना या आपदा रिपोर्ट बुक)",
+                    icon: <BadgeAlert className="w-5 h-5" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("incident");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-rose-500/40 dark:hover:border-rose-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/10">
-                        <BadgeAlert className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">INCIDENT & EMERGENCY WRITER</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Urgent event breakout records and actions logs</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
-
-                  {/* Tool 8: Leave Application */}
-                  <div 
-                    onClick={() => {
+                    },
+                    bgColor: "bg-rose-50 dark:bg-[#111827] text-rose-600 dark:text-rose-400 border border-rose-500/10",
+                    borderColor: "hover:border-rose-500/40 dark:hover:border-rose-500/40"
+                  },
+                  {
+                    id: "leave-requests",
+                    title: "LEAVE REQUESTS SENDER",
+                    description: "Formal illness/vacation application documents",
+                    hiDesc: "(छुट्टी की अर्ज़ी और ऑफिसियल प्रार्थना पत्र)",
+                    icon: <FileText className="w-5 h-5" />,
+                    action: () => {
                       setCurrentView("forms");
                       setFormSubTab("leave");
-                    }}
-                    className="bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:border-teal-500/40 dark:hover:border-teal-500/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-teal-50 dark:bg-teal-950/45 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-500/10">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100">LEAVE REQUESTS SENDER</h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Formal illness/vacation application documents</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  </div>
+                    },
+                    bgColor: "bg-teal-50 dark:bg-[#111827] text-teal-600 dark:text-teal-400 border border-teal-500/10",
+                    borderColor: "hover:border-teal-500/40 dark:hover:border-teal-500/40"
+                  }
+                ];
 
-                </div>
-              </div>
+                const filteredToolsList = allToolsList.filter(t => 
+                  t.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                  t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  (t.hiDesc && t.hiDesc.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
 
-              {/* BEAUTIFUL TWO-COLUMN WORKSPACE FOR ACTIVE DUTY TOOLS & ACCORDION CHEAT-SHEETS */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
-                
-                {/* Left Side: Dynamic Vigilance Toolkit (7 Columns on Large displays) */}
-                <div className="lg:col-span-7 space-y-6">
-                  
-                  {/* ACTIVE DUTY EMERGENCY & VIGILANCE TOOLKIT */}
-                  <div className={`p-5 rounded-2xl border ${
-                    darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-white border-slate-200"
-                  } space-y-4 shadow-xs`}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold shrink-0">🚨</div>
-                      <div>
-                        <h4 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100 uppercase tracking-tight">
-                          Active Duty Security Toolkit (सुरक्षा & गश्त टूलकिट)
-                        </h4>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                          Duty par alert aur vigilant rehne ke digital active operations control.
-                        </p>
+                return (
+                  <div className="space-y-4">
+                    {/* Filter & Portal Header Status */}
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+                        <h3 className="font-display font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-200 uppercase tracking-widest font-mono">
+                          Primary Command Tools (मुख्य रिपोर्टिंग बोर्ड)
+                        </h3>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                       
-                      {/* SOUND PANEL */}
-                      <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${
-                        darkMode ? "bg-slate-950/45 border-slate-900" : "bg-slate-50 border-slate-150"
-                      }`}>
-                        <div>
-                          <span className="text-[8px] font-extrabold uppercase font-mono tracking-widest text-[#2563eb] dark:text-[#60a5fa] block mb-1">
-                            🔊 Sound Alarms (सायरन & सीटी)
-                          </span>
-                          <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                            Browser synthesizer se alarm bajane ke shortcut buttons!
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 mt-4">
-                          <button
-                            type="button"
-                            onClick={playRefWhistle}
-                            className="py-2 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-xs font-extrabold transition-all duration-150 flex items-center justify-center gap-1 shadow active:scale-95 cursor-pointer uppercase"
-                          >
-                            <span>🔊 Whistle</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={playSirensSound}
-                            className="py-2 px-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] sm:text-xs font-extrabold transition-all duration-150 flex items-center justify-center gap-1 shadow active:scale-95 cursor-pointer uppercase"
-                          >
-                            <span>🚨 Siren Alarm</span>
-                          </button>
-                        </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-teal-600 dark:text-teal-400 font-mono tracking-wider bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-xl uppercase">
+                          <Wifi className="w-3 h-3 text-teal-500" /> Offline Sync
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold">
+                          {filteredToolsList.length} / 8 Tools Active
+                        </span>
                       </div>
-
-                      {/* PATROL Countdown PANEL */}
-                      <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${
-                        darkMode ? "bg-slate-950/45 border-slate-900" : "bg-slate-50 border-slate-150"
-                      } ${patrolActive ? "ring-2 ring-blue-500/50" : ""}`}>
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-[8px] font-extrabold uppercase font-mono tracking-widest text-emerald-600 dark:text-emerald-400 block">
-                              ⏱️ Patrol Alarm (ड्यूटी अलर्ट अलार्म)
-                            </span>
-                            {patrolActive && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                            )}
-                          </div>
-                          <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                            Timer lagayein, finish hone par siren automatic baje-ga.
-                          </p>
-                        </div>
-
-                        <div className="mt-3 space-y-2">
-                          {/* Timer Face */}
-                          <div className="flex items-center justify-between bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-850">
-                            <span className="text-[9px] font-extrabold text-slate-400 font-mono">COUNTDOWN</span>
-                            <span className="text-sm font-mono font-bold tracking-wider text-emerald-600 dark:text-emerald-400">
-                              {Math.floor(patrolTimeLeft / 60).toString().padStart(2, "0")} : {(patrolTimeLeft % 60).toString().padStart(2, "0")}
-                            </span>
-                          </div>
-
-                          {/* Preset selector buttons */}
-                          <div className="flex gap-1 overflow-x-auto pb-1">
-                            {[1, 5, 15, 30, 45, 60].map((m) => (
-                              <button
-                                key={m}
-                                disabled={patrolActive}
-                                onClick={() => {
-                                  setPatrolPreset(m);
-                                  setPatrolTimeLeft(m * 60);
-                                }}
-                                className={`px-1.5 py-0.5 text-[8px] font-extrabold rounded-md transition border ${
-                                  patrolPreset === m 
-                                    ? "bg-blue-600 text-white border-blue-600" 
-                                    : "bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 border-slate-200 dark:border-slate-800 hover:bg-slate-100"
-                                }`}
-                              >
-                                {m}M
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setPatrolActive(!patrolActive)}
-                              className={`py-1 rounded text-[9px] font-extrabold uppercase transition-all duration-150 ${
-                                patrolActive 
-                                  ? "bg-amber-600 hover:bg-amber-700 text-white" 
-                                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                              }`}
-                            >
-                              {patrolActive ? "⏸️ Pause" : "▶️ Start"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPatrolActive(false);
-                                setPatrolTimeLeft(patrolPreset * 60);
-                              }}
-                              className="py-1 rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[9px] font-extrabold uppercase transition"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                        </div>
-
-                      </div>
-
                     </div>
-                  </div>
 
-                </div>
+                    {/* Dynamic Search & Design Accent */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
+                      <div className="relative md:col-span-7">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Search className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="Type to filter tools / रिपोर्ट खोजना शुरू करें (e.g. late slip, visitor, leave)..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className={`w-full pl-9 pr-8 py-2 text-xs font-semibold rounded-xl border placeholder-slate-400 transition-all duration-200 ${
+                            darkMode 
+                              ? "bg-[#111827]/75 border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 text-white" 
+                              : "bg-white border-slate-250 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-slate-800"
+                          }`}
+                        />
+                        {searchTerm && (
+                          <button 
+                            type="button"
+                            onClick={() => setSearchTerm("")}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[10px] font-extrabold uppercase text-slate-400 hover:text-blue-500 transition"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
 
-                {/* Right Side: Install, Guides, Phrases in Accordions (5 Columns block) */}
-                <div className="lg:col-span-5 space-y-6">
-
-                  {/* PWA DYNAMIC INSTALLATION ACTION PROMPT CARD */}
-                  <div className={`p-4 rounded-2xl border bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-md relative overflow-hidden transition-all duration-300`}>
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl transform translate-x-10 -translate-y-10"></div>
-                    <div className="relative z-10 flex flex-col gap-3">
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="p-1 py-0.5 rounded bg-white/20 text-[8px] font-extrabold uppercase tracking-wide">PWA Desktop/Mobile</span>
-                        </div>
-                        <h4 className="text-xs font-extrabold uppercase mt-1">
-                          Install Guard AI App!
-                        </h4>
-                        <p className="text-[10px] text-blue-100 leading-normal mt-0.5">
-                          Apne mobile home screen par jodkar bina browser asali app bhalu chalayein.
+                      <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 md:col-span-5 ${
+                        darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-blue-50/45 border-blue-100"
+                      }`}>
+                        <Lightbulb className="w-4 h-4 text-blue-500 shrink-0" />
+                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-tight">
+                          <strong>Vigilance Tip:</strong> Check vehicles thoroughly and write down timings. Convert Hinglish to formal English below!
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleInstallAppClick}
-                        className="w-full text-center py-2 rounded-xl bg-white text-indigo-700 hover:bg-slate-50 font-extrabold text-[10px] transition duration-150 active:scale-95 uppercase tracking-wider cursor-pointer"
-                      >
-                        🚀 Add To Screen / जोड़ें
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Accordion 1: BEGINNERS GUIDE TO USE THE PORTAL */}
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${
-                    darkMode ? "bg-slate-900/40 border-slate-800/80" : "bg-indigo-50/70 border-indigo-100"
-                  } space-y-3`}>
-                    <div className="flex items-center justify-between gap-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">💡</span>
-                        <div>
-                          <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-100 uppercase tracking-tight">
-                            Beginners Guide (बिगनर्स गाइड)
-                          </h4>
-                          <p className="text-[9px] text-slate-500 dark:text-slate-400">
-                            Naye security guards is guide ko click karke seekhein.
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowGuide(!showGuide)}
-                        className="text-[9px] uppercase font-extrabold px-2 py-1 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-lg border border-slate-200 dark:border-slate-800 transition"
-                      >
-                        {showGuide ? "Hide" : "Show"}
-                      </button>
                     </div>
 
-                    {showGuide && (
-                      <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-805 text-[11px] leading-relaxed">
-                        <div className="space-y-2">
-                          <p>
-                            <strong>1. Select Tool:</strong> Choose any operational report template from the primary command tools.
-                          </p>
-                          <p>
-                            <strong>2. Type raw mix:</strong> Type what happened in your spoken language/Hinglish (e.g. <em>"sir gate 1 pe vehicle heavy check pass kiya"</em>).
-                          </p>
-                          <p>
-                            <strong>3. Upgraded Output:</strong> Press <strong>Convert</strong> to build formal English. Copy to clipboard or directly click <strong>Send to WhatsApp</strong>!
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            localStorage.setItem("translator_format_type", "security");
-                            setCurrentView("aiwriter");
-                          }}
-                          className="w-full text-center py-1.5 rounded-lg bg-indigo-600 text-white font-extrabold text-[9px] uppercase transition hover:bg-indigo-700"
-                        >
-                          Try Live Trial 🚀
-                        </button>
+                    {/* Hinglish Predefined Duty Custom Situation Helper Clips */}
+                    <div className={`p-3 rounded-2xl border ${
+                      darkMode ? "bg-slate-900/35 border-slate-800/80" : "bg-slate-50 border-slate-200"
+                    } space-y-2`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-extrabold uppercase font-mono tracking-widest text-[#2563eb] dark:text-[#60a5fa]">
+                          ⚡ Hinglish Duty Predefined Situations (कॉपी-पेस्ट और तुरंत उपयोग करें)
+                        </span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Accordion 2: DAILY QUICK ENGLISH PHRASES CHEAT-SHEET */}
-                  <div className={`p-4 rounded-xl border ${
-                    darkMode ? "bg-slate-900/40 border-slate-850" : "bg-white border-slate-200"
-                  } space-y-3`}>
-                    <div className="flex items-center justify-between gap-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">📖</span>
-                        <div>
-                          <h4 className="font-extrabold text-xs text-slate-850 dark:text-slate-100 uppercase tracking-tight">
-                            Quick Phrases (आम भाषा अंग्रेजी)
-                          </h4>
-                          <p className="text-[9px] text-slate-500">
-                            Daily useful readymade copy sentences.
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowPhrases(!showPhrases)}
-                        className="text-[9px] uppercase font-extrabold px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-900 text-slate-650 dark:text-slate-350 rounded-lg border border-slate-250 dark:border-slate-800 transition"
-                      >
-                        {showPhrases ? "Hide" : "Show"}
-                      </button>
-                    </div>
-
-                    {showPhrases && (
-                      <div className="space-y-2.5 pt-3 border-t border-slate-150 dark:border-slate-800 max-h-[250px] overflow-y-auto pr-1">
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                         {[
                           {
-                            cat: "🔄 Shift Handover",
-                            hi: "गश्त पूरी हुई, सब ठीक पाया गया।",
-                            en: "Patrol has been completed, and everything was found to be in order."
+                            title: "🚚 Heavy Vehicle Entry",
+                            hin: "Gate number 1 pe truck enter huwa, full details and driving license check kar liya hai.",
+                            target: "corporate"
                           },
                           {
-                            cat: "🚪 Gate Status",
-                            hi: "सभी मुख्य गेट लॉक और पूरी तरह सुरक्षित हैं।",
-                            en: "All main gates have been securely locked and verified."
+                            title: "🔑 Shift Handover Completed",
+                            hin: "Agle duty card guard ko safalta-purvak shift charge aur saari keys handover kar dya hai.",
+                            target: "corporate"
                           },
                           {
-                            cat: "👤 Visitor Entry",
-                            hi: "विजिटर को बिना आईडी कार्ड के अनुमति नहीं है।",
-                            en: "Visitors are strictly not permitted to enter the premises without a valid ID card."
+                            title: "🌧️ Rainy & Light Patrol",
+                            hin: "Bahar tej baarish ho rahi hai, perimeter checking safe hai aur emergency light check kar li hai.",
+                            target: "brief"
                           },
                           {
-                            cat: "🚗 Parking Alert",
-                            hi: "अनधिकृत गाड़ी को नो-पार्किंग क्षेत्र से हटा दिया गया है।",
-                            en: "The unauthorized vehicle has been cleared from the no-parking zone."
+                            title: "👥 Visitor Approval Registry",
+                            hin: "Guest gate par kade thhe, resident manager se call par approval lekar details update kar li hai.",
+                            target: "corporate"
                           },
                           {
-                            cat: "📅 Duty Report",
-                            hi: "अगली शिफ्ट के गार्ड आ गए हैं, चार्ज सफलतापूर्वक दे दिया है।",
-                            en: "The next shift guard has arrived, and duty charge has been successfully handed over."
+                            title: "💡 Power Cut Generator",
+                            hin: "Camp me electricity shut down hua hai, generators successfully turned-on aur area normal hai.",
+                            target: "brief"
+                          },
+                          {
+                            title: "🚨 Parking space warning",
+                            hin: "Gate ke samne no-parking me gadi khadi thi, usko call karke warning dekar immediate hata diya gaya.",
+                            target: "corporate"
                           }
                         ].map((item, idx) => {
-                          const isCopied = copiedIndex === idx;
+                          const isCopied = copiedIndex === idx + 100;
                           return (
                             <div 
                               key={idx}
-                              className={`p-2 rounded-xl border text-[11px] space-y-1 ${
-                                darkMode ? "bg-slate-950/45 border-slate-900" : "bg-slate-50 border-slate-200"
+                              onClick={() => {
+                                navigator.clipboard.writeText(item.hin);
+                                setCopiedIndex(idx + 100);
+                                setTimeout(() => setCopiedIndex(null), 2000);
+                                localStorage.setItem("translator_format_type", item.target);
+                                setCurrentView("aiwriter");
+                              }}
+                              className={`p-2 rounded-xl border text-[11px] cursor-pointer hover:border-blue-500/50 hover:scale-[1.01] transition-all duration-150 relative text-left group ${
+                                darkMode ? "bg-slate-950/45 border-slate-900" : "bg-white border-slate-200"
                               }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="px-1 py-0.5 rounded text-[8px] font-extrabold uppercase bg-indigo-500/10 text-indigo-500">
-                                  {item.cat}
+                              <div className="flex items-center justify-between font-extrabold text-[10px] text-blue-600 dark:text-blue-400 mb-1">
+                                <span>{item.title}</span>
+                                <span className="text-[8px] bg-blue-500/10 px-1 py-0.2 rounded font-mono uppercase group-hover:text-blue-500">
+                                  {isCopied ? "✓ Copied" : "⚡ Copy & Open"}
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(item.en);
-                                    setCopiedIndex(idx);
-                                    setTimeout(() => setCopiedIndex(null), 2000);
-                                  }}
-                                  className="text-[9px] font-extrabold text-blue-500 hover:underline hover:text-blue-600 transition"
-                                >
-                                  {isCopied ? "✓ Copied" : "📋 Copy"}
-                                </button>
                               </div>
-                              <p className="text-[10px] text-slate-500 italic">🇮🇳 {item.hi}</p>
-                              <p className="text-[10.5px] font-mono text-slate-800 dark:text-emerald-400 font-bold">"{item.en}"</p>
+                              <p className="text-slate-500 dark:text-slate-400 line-clamp-1 italic">"{item.hin}"</p>
                             </div>
                           );
                         })}
                       </div>
-                    )}
+                    </div>
+
+                    {/* Dynamic Responsive Tools Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {filteredToolsList.length > 0 ? (
+                        filteredToolsList.map((tool) => (
+                          <div 
+                            key={tool.id}
+                            onClick={tool.action}
+                            className={`bg-white dark:bg-[#111827] border border-slate-200/50 dark:border-slate-900 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:shadow-md hover:scale-[1.01] transition-all duration-205 cursor-pointer text-left ${tool.borderColor}`}
+                          >
+                            <div className="flex items-center gap-3.5">
+                              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${tool.bgColor}`}>
+                                {tool.icon}
+                              </div>
+                              <div>
+                                <h5 className="font-extrabold text-xs sm:text-sm text-slate-850 dark:text-slate-100 flex items-center gap-1">
+                                  <span>{tool.title}</span>
+                                </h5>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{tool.description}</p>
+                                <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 italic block mt-0.5">{tool.hiDesc}</span>
+                              </div>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-405 dark:text-slate-500 shrink-0" />
+                          </div>
+                        ))
+                      ) : (
+                        <div className="col-span-1 sm:col-span-2 text-center py-8 text-xs font-semibold text-slate-400 font-mono">
+                          🔍 No tools matching "{searchTerm}". Clear search to find all 8 options!
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                </div>
-
-              </div>
+                );
+              })()}
 
               {/* GORGEOUS HIGH-FIDELITY FOOTER */}
               <div className="border-t border-slate-150 dark:border-slate-900 pt-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium font-mono">
