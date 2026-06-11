@@ -613,20 +613,23 @@ export default function App() {
 
   // C. Authenticated Main Layout
   return (
-    <div className={`min-h-screen font-sans flex transition-colors duration-200 ${darkMode ? "bg-slate-950 text-slate-100" : "bg-[#F4F7FA] text-slate-800"}`}>
+    <div className={`min-h-screen font-sans flex transition-colors duration-300 ${darkMode ? "bg-[#090e1a] text-slate-100" : "bg-[#F4F7FA] text-slate-800"}`}>
       
       {/* Sidebar navigation */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 border-r flex flex-col justify-between ${darkMode ? "bg-[#111d38] border-blue-950/60" : "bg-[#1B2A4E] border-blue-900/50"} text-white`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 border-r flex flex-col justify-between ${darkMode ? "bg-[#111827] border-slate-900/90 shadow-2xl" : "bg-[#1B2A4E] border-blue-900/50"} text-white`}>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
-                alt="Guard AI Logo"
-                className="w-8 h-8 object-contain rounded-md"
-                referrerPolicy="no-referrer"
-              />
-              <span className="font-bold text-lg tracking-tight">GUARD ENGLISH AI</span>
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500/25 rounded-lg blur-sm"></div>
+                <img
+                  src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+                  alt="Guard AI Logo"
+                  className="w-8 h-8 object-contain rounded-md relative z-10"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <span className="font-display font-extrabold text-base tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">GUARD ENGLISH AI</span>
             </div>
             
             {/* Mobile close button */}
@@ -635,7 +638,7 @@ export default function App() {
             </button>
           </div>
 
-          <div className="border-t border-blue-900/50"></div>
+          <div className="border-t border-slate-800/80"></div>
 
           {/* Menu Options links list */}
           <nav className="space-y-1">
@@ -780,22 +783,25 @@ export default function App() {
       <main className="flex-1 md:pl-64 flex flex-col justify-start">
         
         {/* Workspace Top Header Panel */}
-        <header className={`h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b sticky top-0 backdrop-blur-md z-40 ${darkMode ? "bg-[#111d38]/90 border-slate-900" : "bg-white border-slate-150"}`}>
+        <header className={`h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b sticky top-0 backdrop-blur-md z-40 ${darkMode ? "bg-[#090e1a]/85 border-slate-900/90" : "bg-white border-slate-150"}`}>
           <div className="flex items-center gap-2.5">
-            <button onClick={() => setSidebarOpen(true)} className="md:hidden text-slate-400 hover:text-indigo-500 transition mr-2">
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden text-slate-400 hover:text-indigo-400 transition mr-2">
               <Menu className="w-5 h-5" />
             </button>
 
             {/* Custom Mockup Shield Brand Guard AI */}
             <div className="flex items-center gap-2">
-              <img
-                src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
-                alt="Guard AI Logo"
-                className="w-8 h-8 object-contain rounded-md shrink-0"
-                referrerPolicy="no-referrer"
-              />
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500/20 rounded-md blur-sm"></div>
+                <img
+                  src="https://fat-azure-kkcyikqe.edgeone.app/file_00000000f60071fab8c19be6b3db0ab7.png"
+                  alt="Guard AI Logo"
+                  className="w-7 h-7 object-contain rounded-md shrink-0 relative z-10"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
               <div>
-                <span className="font-extrabold text-base tracking-tight text-slate-800 dark:text-white uppercase font-sans">Guard AI</span>
+                <span className="font-display font-bold text-base tracking-tight text-slate-800 dark:text-white uppercase">GUARD AI WORKSPACE</span>
               </div>
             </div>
           </div>
